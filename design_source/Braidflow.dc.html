@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFE7DB;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#B4522A;text-decoration:none}a:hover{color:#8E3C1C}
+::-webkit-scrollbar{width:0;height:0}
+@keyframes bfpulse{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+</helmet>
+
+<div style="display:flex;align-items:flex-start;gap:56px;padding:56px 60px 80px;min-width:1500px">
+
+  <div style="width:560px;flex:none;display:flex;flex-direction:column;gap:32px">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#B4522A">
+        <span style="width:22px;height:1.5px;background:#B4522A"></span><span>Salon operations · v1 structure</span>
+      </div>
+      <h1 style="margin:14px 0 10px;font:400 62px/0.95 'Instrument Serif',serif;color:#17101B;letter-spacing:-.5px">Braidflow</h1>
+      <p style="margin:0;font:400 15.5px/1.6 Manrope,sans-serif;color:rgba(23,16,27,.62);text-wrap:pretty;max-width:44ch">One queue, three views. The front desk checks a walk-in in under ten seconds; the braider only ever sees her own chair; the owner sees the day. Everything else is derived from a single customer status.</p>
+    </div>
+
+    <div style="background:#fff;border:1px solid rgba(23,16,27,.10);border-radius:16px;padding:24px 26px">
+      <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.42);margin-bottom:16px">The one state machine</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="padding:9px 14px;border-radius:999px;background:#FBF3E2;border:1px solid rgba(201,150,43,.45);font:700 12.5px Manrope,sans-serif;color:#8A6410">WAITING</div>
+        <span style="color:rgba(23,16,27,.3);font-size:16px">→</span>
+        <div style="padding:9px 14px;border-radius:999px;background:#FBEBE3;border:1px solid rgba(180,82,42,.4);font:700 12.5px Manrope,sans-serif;color:#B4522A">IN&nbsp;PROGRESS</div>
+        <span style="color:rgba(23,16,27,.3);font-size:16px">→</span>
+        <div style="padding:9px 14px;border-radius:999px;background:#E8F3EE;border:1px solid rgba(31,122,92,.35);font:700 12.5px Manrope,sans-serif;color:#1F7A5C">COMPLETED</div>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin-top:18px;font:400 13.5px/1.5 Manrope,sans-serif;color:rgba(23,16,27,.66)">
+        <b style="color:#17101B">Trigger 1</b><span>Supervisor checks in a walk-in → queue number issued.</span>
+        <b style="color:#17101B">Trigger 2</b><span>Auto-allocation to the longest-idle free braider (supervisor can override before or after).</span>
+        <b style="color:#17101B">Trigger 3</b><span>Braider taps <i>Finish client</i> → she flips to <b>Free</b> and the next waiting customer is pulled to her chair.</span>
+      </div>
+      <p style="margin:16px 0 0;font:400 13px/1.5 Manrope,sans-serif;color:rgba(23,16,27,.5);border-top:1px solid rgba(23,16,27,.08);padding-top:14px">Braider availability is never entered by hand — it is a read of "does this braider have an in-progress customer, and is she clocked in". That's what keeps the two journeys in sync.</p>
+    </div>
+
+    <div style="background:#fff;border:1px solid rgba(23,16,27,.10);border-radius:16px;padding:24px 26px">
+      <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.42);margin-bottom:6px">Screen map</div>
+      <p style="margin:0 0 16px;font:400 12.5px/1.5 Manrope,sans-serif;color:rgba(23,16,27,.5)">Tap any screen to jump the prototype to it.</p>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <sc-for list="{{ mapRoles }}" as="r" hint-placeholder-count="3">
+          <div>
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+              <span style="width:8px;height:8px;border-radius:2px;background: {{ r.color }}"></span>
+              <span style="font:700 13px Manrope,sans-serif;color:#17101B">{{ r.label }}</span>
+              <span style="font:500 12px Manrope,sans-serif;color:rgba(23,16,27,.45)">{{ r.job }}</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px">
+              <sc-for list="{{ r.screens }}" as="s" hint-placeholder-count="4">
+                <button onClick="{{ s.go }}" style="cursor:pointer;padding:8px 13px;border-radius:9px;border:1px solid rgba(23,16,27,.14);background:#FCFAF6;font:600 12.5px Manrope,sans-serif;color:#3B1F3E" style-hover="background:#17101B;color:#fff;border-color:#17101B">{{ s.name }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background:#17101B;border-radius:16px;padding:24px 26px;color:#fff">
+      <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:14px">Data model (4 tables)</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <div style="border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:13px 14px">
+          <div style="font:700 13px Manrope,sans-serif;margin-bottom:6px">salon_staff</div>
+          <div style="font:400 11.5px/1.55 ui-monospace,Menlo,monospace;color:rgba(255,255,255,.6)">id · name · role<br>owner | supervisor | braider<br>skills[] · phone · active</div>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:13px 14px">
+          <div style="font:700 13px Manrope,sans-serif;margin-bottom:6px">customers</div>
+          <div style="font:400 11.5px/1.55 ui-monospace,Menlo,monospace;color:rgba(255,255,255,.6)">id · queue_no · name<br>phone · service · status<br>braider_id · checked_in_at<br>started_at · completed_at</div>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:13px 14px">
+          <div style="font:700 13px Manrope,sans-serif;margin-bottom:6px">shifts</div>
+          <div style="font:400 11.5px/1.55 ui-monospace,Menlo,monospace;color:rgba(255,255,255,.6)">staff_id · date<br>clock_in · clock_out<br>→ drives "off" state</div>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:13px 14px">
+          <div style="font:700 13px Manrope,sans-serif;margin-bottom:6px">services</div>
+          <div style="font:400 11.5px/1.55 ui-monospace,Menlo,monospace;color:rgba(255,255,255,.6)">name · avg_minutes<br>→ drives wait estimates</div>
+        </div>
+      </div>
+      <p style="margin:16px 0 0;font:400 12.5px/1.55 Manrope,sans-serif;color:rgba(255,255,255,.55)">No separate "availability" table. Braider status = derived; queue position = order by <span style="font-family:ui-monospace,monospace">checked_in_at</span> where status is waiting.</p>
+    </div>
+
+    <div style="border:1px dashed rgba(23,16,27,.25);border-radius:16px;padding:22px 26px">
+      <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.42);margin-bottom:12px">Assumptions I made — correct me</div>
+      <div style="display:flex;flex-direction:column;gap:9px;font:400 13.5px/1.5 Manrope,sans-serif;color:rgba(23,16,27,.66)">
+        <div>· Phone-first, 6 braiders, one location, one shared device at the desk + braiders on their own phones.</div>
+        <div>· Only the braid style is captured at check-in; price/deposit is out of scope for v1.</div>
+        <div>· Auto-assign is on by default and picks the <b>longest-idle clocked-in braider</b>; the supervisor can reassign at any point.</div>
+        <div>· A braider can hold exactly one in-progress customer. Long styles (4–6h) are the norm, so wait estimates come from service averages, not a fixed slot length.</div>
+        <div>· Walk-ins only. No advance booking, no payments, no SMS yet.</div>
+      </div>
+    </div>
+
+    <div style="font:400 13.5px/1.6 Manrope,sans-serif;color:rgba(23,16,27,.5)">
+      <b style="color:#17101B">Next steps:</b> add SMS "you're next" notifications · deposit capture at check-in · skill-matched allocation (style → eligible braiders) · weekly owner report · multi-branch.
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px;align-items:center;position:sticky;top:40px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="padding:7px 12px;border-radius:8px;background:#17101B;color:#fff;font:700 11px Manrope,sans-serif;letter-spacing:.08em;text-transform:uppercase">Live prototype</div>
+      <div style="font:500 12.5px Manrope,sans-serif;color:rgba(23,16,27,.5)">{{ crumb }}</div>
+    </div>
+
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+      <div style="height:100%;display:flex;flex-direction:column;background:#F7F1E8;font-family:Manrope,system-ui,sans-serif;position:relative">
+
+        <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 26px 46px;background:#17101B">
+            <div style="position:absolute;top:0;left:0;right:0;height:340px;background:radial-gradient(120% 90% at 20% 0%,rgba(180,82,42,.55),transparent 70%)"></div>
+            <div style="position:relative">
+              <div style="font:400 11px/1 Manrope,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.5)">Sandra's Braiding Studio</div>
+              <div style="font:400 54px/0.95 'Instrument Serif',serif;color:#fff;margin:10px 0 6px">Braidflow</div>
+              <div style="font:400 14px/1.5 Manrope,sans-serif;color:rgba(255,255,255,.6);margin-bottom:30px">Sign in as</div>
+              <div style="display:flex;flex-direction:column;gap:11px">
+                <sc-for list="{{ roleCards }}" as="rc" hint-placeholder-count="3">
+                  <button onClick="{{ rc.go }}" style="cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);min-height:72px" style-hover="background:rgba(255,255,255,.14)">
+                    <div style="width:44px;height:44px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font:700 16px Manrope,sans-serif;color:#17101B;background: {{ rc.color }}">{{ rc.initials }}</div>
+                    <div style="flex:1">
+                      <div style="font:700 15.5px Manrope,sans-serif;color:#fff">{{ rc.name }}</div>
+                      <div style="font:500 12.5px Manrope,sans-serif;color:rgba(255,255,255,.55)">{{ rc.sub }}</div>
+                    </div>
+                    <span style="color:rgba(255,255,255,.4);font-size:18px">›</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+
+            <div style="flex:none;padding:60px 20px 14px;background:#F7F1E8;border-bottom:1px solid rgba(23,16,27,.07)">
+              <div style="display:flex;align-items:flex-start;gap:12px">
+                <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ back }}" style="cursor:pointer;margin-top:4px;width:34px;height:34px;flex:none;border-radius:10px;border:1px solid rgba(23,16,27,.12);background:#fff;font-size:16px;color:#3B1F3E">‹</button>
+                </sc-if>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 10px/1 Manrope,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#B4522A">{{ roleLabel }}</div>
+                  <div style="font:400 30px/1.1 'Instrument Serif',serif;color:#17101B;margin-top:5px">{{ screenTitle }}</div>
+                  <div style="font:500 12.5px Manrope,sans-serif;color:rgba(23,16,27,.5);margin-top:3px">{{ screenSub }}</div>
+                </div>
+                <button onClick="{{ logout }}" style="cursor:pointer;margin-top:4px;flex:none;padding:7px 11px;border-radius:9px;border:1px solid rgba(23,16,27,.12);background:#fff;font:600 11.5px Manrope,sans-serif;color:rgba(23,16,27,.55)">Switch</button>
+              </div>
+            </div>
+
+            <div style="flex:1;overflow:auto;padding:16px 20px 120px">
+
+              <sc-if value="{{ isQueue }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:9px;margin-bottom:18px">
+                  <div style="flex:1;background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:14px;padding:13px 14px">
+                    <div style="font:800 26px/1 Manrope,sans-serif;color:#8A6410">{{ nWaiting }}</div>
+                    <div style="font:600 11px Manrope,sans-serif;color:rgba(23,16,27,.5);margin-top:4px">Waiting</div>
+                  </div>
+                  <div style="flex:1;background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:14px;padding:13px 14px">
+                    <div style="font:800 26px/1 Manrope,sans-serif;color:#B4522A">{{ nActive }}</div>
+                    <div style="font:600 11px Manrope,sans-serif;color:rgba(23,16,27,.5);margin-top:4px">In chair</div>
+                  </div>
+                  <div style="flex:1;background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:14px;padding:13px 14px">
+                    <div style="font:800 26px/1 Manrope,sans-serif;color:#1F7A5C">{{ nFree }}</div>
+                    <div style="font:600 11px Manrope,sans-serif;color:rgba(23,16,27,.5);margin-top:4px">Free now</div>
+                  </div>
+                </div>
+
+                <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.4);margin-bottom:10px">Waiting · tap to allocate</div>
+                <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:22px">
+                  <sc-for list="{{ waitingList }}" as="c" hint-placeholder-count="3">
+                    <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-left:3px solid #C9962B;border-radius:14px;padding:14px;display:flex;align-items:center;gap:13px">
+                      <div style="width:46px;height:46px;flex:none;border-radius:12px;background:#FBF3E2;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                        <div style="font:800 15px/1 Manrope,sans-serif;color:#8A6410">{{ c.no }}</div>
+                        <div style="font:700 7.5px/1 Manrope,sans-serif;letter-spacing:.1em;color:rgba(138,100,16,.65);margin-top:2px">QUEUE</div>
+                      </div>
+                      <div style="flex:1;min-width:0">
+                        <div style="font:700 15px Manrope,sans-serif;color:#17101B">{{ c.name }}</div>
+                        <div style="font:500 12.5px Manrope,sans-serif;color:rgba(23,16,27,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.style }}</div>
+                        <div style="font:600 11.5px Manrope,sans-serif;color:#8A6410;margin-top:3px">{{ c.waitLabel }}</div>
+                      </div>
+                      <button onClick="{{ c.openAssign }}" style="cursor:pointer;flex:none;padding:11px 14px;border-radius:11px;border:none;background:#17101B;color:#fff;font:700 12.5px Manrope,sans-serif;min-height:44px">Allocate</button>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ noWaiting }}" hint-placeholder-val="{{ false }}">
+                    <div style="border:1px dashed rgba(23,16,27,.18);border-radius:14px;padding:22px;text-align:center;font:500 13.5px Manrope,sans-serif;color:rgba(23,16,27,.45)">Nobody waiting. Everyone's in a chair.</div>
+                  </sc-if>
+                </div>
+
+                <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.4);margin-bottom:10px">In progress</div>
+                <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:22px">
+                  <sc-for list="{{ activeList }}" as="c" hint-placeholder-count="3">
+                    <button onClick="{{ c.openDetail }}" style="cursor:pointer;text-align:left;background:#fff;border:1px solid rgba(23,16,27,.09);border-left:3px solid #B4522A;border-radius:14px;padding:14px;display:flex;align-items:center;gap:13px">
+                      <div style="width:46px;height:46px;flex:none;border-radius:12px;background:#FBEBE3;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                        <div style="font:800 15px/1 Manrope,sans-serif;color:#B4522A">{{ c.no }}</div>
+                        <div style="font:700 7.5px/1 Manrope,sans-serif;letter-spacing:.1em;color:rgba(180,82,42,.65);margin-top:2px">QUEUE</div>
+                      </div>
+                      <div style="flex:1;min-width:0">
+                        <div style="font:700 15px Manrope,sans-serif;color:#17101B">{{ c.name }}</div>
+                        <div style="font:500 12.5px Manrope,sans-serif;color:rgba(23,16,27,.5)">with {{ c.braiderName }}</div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:5px">
+                          <div style="flex:1;height:4px;border-radius:99px;background:rgba(23,16,27,.08);overflow:hidden">
+                            <div style="height:100%;background:#B4522A;width: {{ c.pct }}"></div>
+                          </div>
+                          <span style="font:600 11px Manrope,sans-serif;color:rgba(23,16,27,.5)">{{ c.elapsedLabel }}</span>
+                        </div>
+                      </div>
+                      <span style="color:rgba(23,16,27,.28);font-size:17px">›</span>
+                    </button>
+                  </sc-for>
+                </div>
+
+                <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.4);margin-bottom:10px">Completed today · {{ nDone }}</div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <sc-for list="{{ doneList }}" as="c" hint-placeholder-count="2">
+                    <div style="background:rgba(255,255,255,.6);border:1px solid rgba(23,16,27,.07);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:11px">
+                      <span style="width:7px;height:7px;border-radius:99px;background:#1F7A5C;flex:none"></span>
+                      <span style="font:700 13.5px Manrope,sans-serif;color:rgba(23,16,27,.75)">{{ c.no }}</span>
+                      <span style="font:500 13.5px Manrope,sans-serif;color:rgba(23,16,27,.6);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                      <span style="font:600 11.5px Manrope,sans-serif;color:rgba(23,16,27,.42)">{{ c.doneLabel }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ isCheckin }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:16px;padding:18px;margin-bottom:14px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                    <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.4)">Next queue number</div>
+                    <div style="font:400 30px/1 'Instrument Serif',serif;color:#B4522A">{{ nextNo }}</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:13px">
+                    <label style="display:block">
+                      <div style="font:600 12px Manrope,sans-serif;color:rgba(23,16,27,.55);margin-bottom:6px">Customer name</div>
+                      <input value="{{ fName }}" onChange="{{ setName }}" placeholder="e.g. Aisha Bangura" style="width:100%;box-sizing:border-box;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid rgba(23,16,27,.16);background:#FCFAF6;font:500 15.5px Manrope,sans-serif;color:#17101B;outline:none" style-focus="border-color:#B4522A;background:#fff">
+                    </label>
+                    <label style="display:block">
+                      <div style="font:600 12px Manrope,sans-serif;color:rgba(23,16,27,.55);margin-bottom:6px">Phone number</div>
+                      <input value="{{ fPhone }}" onChange="{{ setPhone }}" placeholder="076 000 000" style="width:100%;box-sizing:border-box;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid rgba(23,16,27,.16);background:#FCFAF6;font:500 15.5px Manrope,sans-serif;color:#17101B;outline:none" style-focus="border-color:#B4522A;background:#fff">
+                    </label>
+                    <div>
+                      <div style="font:600 12px Manrope,sans-serif;color:rgba(23,16,27,.55);margin-bottom:8px">Braid style</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:7px">
+                        <sc-for list="{{ styleChips }}" as="s" hint-placeholder-count="6">
+                          <button onClick="{{ s.pick }}" style="cursor:pointer;min-height:40px;padding:9px 13px;border-radius:11px;font:600 12.5px Manrope,sans-serif;border:1px solid {{ s.border }};background: {{ s.bg }};color: {{ s.fg }}">{{ s.name }}</button>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="background:#FBF3E2;border:1px solid rgba(201,150,43,.35);border-radius:14px;padding:14px;display:flex;gap:11px;align-items:flex-start;margin-bottom:16px">
+                  <span style="width:8px;height:8px;border-radius:99px;background:#C9962B;margin-top:6px;flex:none"></span>
+                  <div style="font:500 12.5px/1.5 Manrope,sans-serif;color:#7A5A0E">{{ allocPreview }}</div>
+                </div>
+
+                <button onClick="{{ submitCheckin }}" style="cursor:pointer;width:100%;min-height:54px;border-radius:14px;border:none;background:#17101B;color:#fff;font:700 15px Manrope,sans-serif" style-hover="background:#3B1F3E">Check in · issue {{ nextNo }}</button>
+                <div style="text-align:center;font:500 12px Manrope,sans-serif;color:rgba(23,16,27,.4);margin-top:10px">Name is enough. Phone is optional.</div>
+              </sc-if>
+
+              <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <sc-for list="{{ braiderCards }}" as="b" hint-placeholder-count="6">
+                    <button onClick="{{ b.tap }}" style="cursor:pointer;text-align:left;border-radius:16px;padding:14px;min-height:150px;display:flex;flex-direction:column;border:1px solid {{ b.border }};background: {{ b.bg }}">
+                      <div style="display:flex;align-items:center;gap:8px">
+                        <div style="width:34px;height:34px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font:700 13px Manrope,sans-serif;color:#17101B;background: {{ b.avatar }}">{{ b.initials }}</div>
+                        <span style="width:8px;height:8px;border-radius:99px;background: {{ b.dot }}"></span>
+                      </div>
+                      <div style="font:700 14.5px/1.25 Manrope,sans-serif;color:#17101B;margin-top:10px">{{ b.name }}</div>
+                      <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-top:6px;color: {{ b.dot }}">{{ b.statusLabel }}</div>
+                      <div style="font:500 12px/1.45 Manrope,sans-serif;color:rgba(23,16,27,.55);margin-top:8px;flex:1">{{ b.detail }}</div>
+                      <div style="font:600 11px Manrope,sans-serif;color:rgba(23,16,27,.4);border-top:1px solid rgba(23,16,27,.08);padding-top:9px;margin-top:6px">{{ b.footer }}</div>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ isStaff }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ toggleAdd }}" style="cursor:pointer;width:100%;min-height:48px;border-radius:13px;border:1px dashed rgba(23,16,27,.28);background:#fff;font:700 13.5px Manrope,sans-serif;color:#3B1F3E;margin-bottom:14px">+ Register a braider</button>
+                <sc-if value="{{ showAdd }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:16px;padding:16px;margin-bottom:16px;display:flex;flex-direction:column;gap:11px">
+                    <input value="{{ nbName }}" onChange="{{ setNbName }}" placeholder="Braider's full name" style="width:100%;box-sizing:border-box;min-height:46px;padding:0 13px;border-radius:11px;border:1px solid rgba(23,16,27,.16);background:#FCFAF6;font:500 15px Manrope,sans-serif;outline:none" style-focus="border-color:#B4522A">
+                    <input value="{{ nbSkill }}" onChange="{{ setNbSkill }}" placeholder="Speciality · e.g. Knotless, Twists" style="width:100%;box-sizing:border-box;min-height:46px;padding:0 13px;border-radius:11px;border:1px solid rgba(23,16,27,.16);background:#FCFAF6;font:500 15px Manrope,sans-serif;outline:none" style-focus="border-color:#B4522A">
+                    <button onClick="{{ addBraider }}" style="cursor:pointer;min-height:48px;border-radius:12px;border:none;background:#B4522A;color:#fff;font:700 14px Manrope,sans-serif">Add to roster</button>
+                  </div>
+                </sc-if>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ braiderCards }}" as="b" hint-placeholder-count="6">
+                    <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:14px;padding:13px;display:flex;align-items:center;gap:12px">
+                      <div style="width:42px;height:42px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font:700 14px Manrope,sans-serif;color:#17101B;background: {{ b.avatar }}">{{ b.initials }}</div>
+                      <div style="flex:1;min-width:0">
+                        <div style="font:700 14.5px Manrope,sans-serif;color:#17101B">{{ b.name }}</div>
+                        <div style="font:500 12px Manrope,sans-serif;color:rgba(23,16,27,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.skills }}</div>
+                        <div style="font:600 11px Manrope,sans-serif;color:rgba(23,16,27,.4);margin-top:2px">{{ b.footer }}</div>
+                      </div>
+                      <button onClick="{{ b.toggleShift }}" style="cursor:pointer;flex:none;min-height:44px;padding:0 12px;border-radius:11px;font:700 11.5px Manrope,sans-serif;border:1px solid {{ b.border }};background: {{ b.bg }};color:#3B1F3E">{{ b.shiftAction }}</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:16px;padding:18px;margin-bottom:14px">
+                  <div style="display:flex;align-items:center;gap:13px">
+                    <div style="width:56px;height:56px;flex:none;border-radius:14px;background:#F7F1E8;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                      <div style="font:800 17px/1 Manrope,sans-serif;color:#3B1F3E">{{ dNo }}</div>
+                      <div style="font:700 7.5px/1 Manrope,sans-serif;letter-spacing:.1em;color:rgba(59,31,62,.55);margin-top:3px">QUEUE</div>
+                    </div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font:400 26px/1.1 'Instrument Serif',serif;color:#17101B">{{ dName }}</div>
+                      <div style="font:500 13px Manrope,sans-serif;color:rgba(23,16,27,.55);margin-top:3px">{{ dPhone }}</div>
+                    </div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+                    <div style="background:#FCFAF6;border-radius:12px;padding:11px 12px">
+                      <div style="font:600 10.5px Manrope,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:rgba(23,16,27,.42)">Service</div>
+                      <div style="font:700 13.5px/1.3 Manrope,sans-serif;color:#17101B;margin-top:4px">{{ dStyle }}</div>
+                    </div>
+                    <div style="background:#FCFAF6;border-radius:12px;padding:11px 12px">
+                      <div style="font:600 10.5px Manrope,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:rgba(23,16,27,.42)">Braider</div>
+                      <div style="font:700 13.5px/1.3 Manrope,sans-serif;color:#17101B;margin-top:4px">{{ dBraider }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:16px;padding:18px;margin-bottom:14px">
+                  <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.4);margin-bottom:16px">Status timeline</div>
+                  <div style="display:flex;flex-direction:column;gap:0">
+                    <sc-for list="{{ dTimeline }}" as="t" hint-placeholder-count="3">
+                      <div style="display:flex;gap:13px">
+                        <div style="width:26px;flex:none;display:flex;flex-direction:column;align-items:center">
+                          <span style="width:13px;height:13px;border-radius:99px;border:3px solid {{ t.ring }};background: {{ t.fill }};flex:none"></span>
+                          <span style="flex:1;width:2px;background: {{ t.line }};min-height:26px"></span>
+                        </div>
+                        <div style="padding-bottom:16px;flex:1">
+                          <div style="font:700 13.5px Manrope,sans-serif;color: {{ t.fg }}">{{ t.label }}</div>
+                          <div style="font:500 12px Manrope,sans-serif;color:rgba(23,16,27,.45);margin-top:2px">{{ t.at }}</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <sc-if value="{{ dCanAct }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:9px">
+                    <button onClick="{{ dReassign }}" style="cursor:pointer;flex:1;min-height:50px;border-radius:13px;border:1px solid rgba(23,16,27,.16);background:#fff;font:700 13.5px Manrope,sans-serif;color:#3B1F3E">Reassign</button>
+                    <button onClick="{{ dComplete }}" style="cursor:pointer;flex:1;min-height:50px;border-radius:13px;border:none;background:#1F7A5C;color:#fff;font:700 13.5px Manrope,sans-serif">Mark complete</button>
+                  </div>
+                </sc-if>
+              </sc-if>
+
+              <sc-if value="{{ isJob }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ meBusy }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#17101B;border-radius:20px;padding:22px;color:#fff;margin-bottom:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between">
+                      <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.5)">In your chair</div>
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <span style="width:7px;height:7px;border-radius:99px;background:#E58A5E;animation:bfpulse 1.8s ease-in-out infinite"></span>
+                        <span style="font:700 11px Manrope,sans-serif;color:#E58A5E">LIVE</span>
+                      </div>
+                    </div>
+                    <div style="font:400 40px/1.05 'Instrument Serif',serif;margin:14px 0 4px">{{ meCustomerName }}</div>
+                    <div style="font:500 13.5px Manrope,sans-serif;color:rgba(255,255,255,.6)">{{ meCustomerStyle }} · queue {{ meCustomerNo }}</div>
+                    <div style="display:flex;align-items:flex-end;gap:18px;margin-top:22px">
+                      <div>
+                        <div style="font:400 44px/1 'Instrument Serif',serif;color:#fff">{{ meElapsed }}</div>
+                        <div style="font:600 11px Manrope,sans-serif;color:rgba(255,255,255,.45);margin-top:4px">elapsed</div>
+                      </div>
+                      <div style="flex:1;padding-bottom:6px">
+                        <div style="height:6px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden">
+                          <div style="height:100%;background:#E58A5E;width: {{ mePct }}"></div>
+                        </div>
+                        <div style="font:600 11px Manrope,sans-serif;color:rgba(255,255,255,.45);margin-top:7px">{{ meEta }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <button onClick="{{ meFinish }}" style="cursor:pointer;width:100%;min-height:58px;border-radius:16px;border:none;background:#1F7A5C;color:#fff;font:700 15.5px Manrope,sans-serif" style-hover="background:#186049">Finish client · go free</button>
+                  <div style="text-align:center;font:500 12px/1.5 Manrope,sans-serif;color:rgba(23,16,27,.45);margin-top:10px">Finishing marks the customer completed and puts you back on the free list instantly.</div>
+                </sc-if>
+                <sc-if value="{{ meFree }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#E8F3EE;border:1px solid rgba(31,122,92,.3);border-radius:20px;padding:26px 22px;text-align:center;margin-bottom:14px">
+                    <div style="font:400 34px/1.1 'Instrument Serif',serif;color:#1F7A5C">You're free</div>
+                    <div style="font:500 13.5px/1.5 Manrope,sans-serif;color:rgba(23,16,27,.55);margin-top:8px">{{ meFreeSince }} · the desk can see you as available. The next walk-in will land here automatically.</div>
+                  </div>
+                  <sc-if value="{{ hasNextForMe }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ meTakeNext }}" style="cursor:pointer;width:100%;min-height:56px;border-radius:15px;border:none;background:#17101B;color:#fff;font:700 15px Manrope,sans-serif">Take {{ nextForMeName }} · queue {{ nextForMeNo }}</button>
+                  </sc-if>
+                </sc-if>
+                <div style="margin-top:20px;background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:16px;padding:16px">
+                  <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.4);margin-bottom:13px">Your day</div>
+                  <div style="display:flex;gap:10px">
+                    <div style="flex:1"><div style="font:800 24px/1 Manrope,sans-serif;color:#17101B">{{ meDone }}</div><div style="font:600 11px Manrope,sans-serif;color:rgba(23,16,27,.5);margin-top:4px">Clients done</div></div>
+                    <div style="flex:1"><div style="font:800 24px/1 Manrope,sans-serif;color:#17101B">{{ meHours }}</div><div style="font:600 11px Manrope,sans-serif;color:rgba(23,16,27,.5);margin-top:4px">On the clock</div></div>
+                    <div style="flex:1"><div style="font:800 24px/1 Manrope,sans-serif;color:#17101B">{{ meAvg }}</div><div style="font:600 11px Manrope,sans-serif;color:rgba(23,16,27,.5);margin-top:4px">Avg / client</div></div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ isNext }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ waitingList }}" as="c" hint-placeholder-count="3">
+                    <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:14px;padding:14px;display:flex;align-items:center;gap:13px">
+                      <div style="width:42px;height:42px;flex:none;border-radius:12px;background:#FBF3E2;display:flex;align-items:center;justify-content:center;font:800 14px Manrope,sans-serif;color:#8A6410">{{ c.no }}</div>
+                      <div style="flex:1;min-width:0">
+                        <div style="font:700 14.5px Manrope,sans-serif;color:#17101B">{{ c.name }}</div>
+                        <div style="font:500 12.5px Manrope,sans-serif;color:rgba(23,16,27,.5)">{{ c.style }}</div>
+                      </div>
+                      <div style="font:600 11.5px Manrope,sans-serif;color:rgba(23,16,27,.42);text-align:right">{{ c.waitLabel }}</div>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ noWaiting }}" hint-placeholder-val="{{ false }}">
+                    <div style="border:1px dashed rgba(23,16,27,.18);border-radius:14px;padding:26px;text-align:center;font:500 13.5px Manrope,sans-serif;color:rgba(23,16,27,.45)">Queue is empty.</div>
+                  </sc-if>
+                </div>
+                <div style="margin-top:16px;font:500 12.5px/1.5 Manrope,sans-serif;color:rgba(23,16,27,.45)">Braiders see the queue but don't assign from it — the desk allocates, or it comes to you automatically when you finish.</div>
+              </sc-if>
+
+              <sc-if value="{{ isMe }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:18px;padding:20px;text-align:center;margin-bottom:14px">
+                  <div style="width:64px;height:64px;border-radius:18px;margin:0 auto;display:flex;align-items:center;justify-content:center;font:700 22px Manrope,sans-serif;color:#17101B;background:#F3D9C8">{{ meInitials }}</div>
+                  <div style="font:400 28px/1.1 'Instrument Serif',serif;color:#17101B;margin-top:12px">{{ meName }}</div>
+                  <div style="font:500 12.5px Manrope,sans-serif;color:rgba(23,16,27,.5);margin-top:4px">{{ meSkills }}</div>
+                  <div style="display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:8px 13px;border-radius:999px;background: {{ meChipBg }}">
+                    <span style="width:7px;height:7px;border-radius:99px;background: {{ meChipDot }}"></span>
+                    <span style="font:700 11.5px Manrope,sans-serif;color: {{ meChipDot }}">{{ meStatusLabel }}</span>
+                  </div>
+                </div>
+                <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:16px;padding:16px;margin-bottom:14px">
+                  <div style="display:flex;align-items:center;justify-content:space-between">
+                    <div>
+                      <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.4)">Today's shift</div>
+                      <div style="font:700 15px Manrope,sans-serif;color:#17101B;margin-top:6px">{{ meShift }}</div>
+                    </div>
+                    <button onClick="{{ meToggleShift }}" style="cursor:pointer;min-height:46px;padding:0 16px;border-radius:12px;border:none;background: {{ meShiftBg }};color:#fff;font:700 13px Manrope,sans-serif">{{ meShiftAction }}</button>
+                  </div>
+                </div>
+                <div style="font:500 12.5px/1.5 Manrope,sans-serif;color:rgba(23,16,27,.45)">Clocking out removes you from allocation immediately — the desk can't assign a walk-in to a braider who has gone home.</div>
+              </sc-if>
+
+              <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#17101B;border-radius:20px;padding:22px;color:#fff;margin-bottom:12px">
+                  <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.45)">{{ today }}</div>
+                  <div style="display:flex;align-items:flex-end;gap:8px;margin-top:12px">
+                    <div style="font:400 58px/1 'Instrument Serif',serif">{{ nDone }}</div>
+                    <div style="font:500 13px Manrope,sans-serif;color:rgba(255,255,255,.6);padding-bottom:9px">clients completed</div>
+                  </div>
+                  <div style="display:flex;gap:22px;margin-top:20px;border-top:1px solid rgba(255,255,255,.14);padding-top:16px">
+                    <div><div style="font:700 19px/1 Manrope,sans-serif">{{ nActive }}</div><div style="font:500 11px Manrope,sans-serif;color:rgba(255,255,255,.5);margin-top:5px">In chairs</div></div>
+                    <div><div style="font:700 19px/1 Manrope,sans-serif">{{ nWaiting }}</div><div style="font:500 11px Manrope,sans-serif;color:rgba(255,255,255,.5);margin-top:5px">Waiting</div></div>
+                    <div><div style="font:700 19px/1 Manrope,sans-serif">{{ avgWait }}</div><div style="font:500 11px Manrope,sans-serif;color:rgba(255,255,255,.5);margin-top:5px">Avg wait</div></div>
+                    <div><div style="font:700 19px/1 Manrope,sans-serif">{{ utilisation }}</div><div style="font:500 11px Manrope,sans-serif;color:rgba(255,255,255,.5);margin-top:5px">Chairs busy</div></div>
+                  </div>
+                </div>
+                <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:16px;padding:18px;margin-bottom:12px">
+                  <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.4);margin-bottom:14px">Clients per braider</div>
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <sc-for list="{{ ownerRows }}" as="b" hint-placeholder-count="6">
+                      <div style="display:flex;align-items:center;gap:11px">
+                        <div style="width:74px;flex:none;font:600 12.5px Manrope,sans-serif;color:#17101B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.first }}</div>
+                        <div style="flex:1;height:22px;border-radius:6px;background:rgba(23,16,27,.06);overflow:hidden">
+                          <div style="height:100%;border-radius:6px;background: {{ b.barColor }};width: {{ b.barW }}"></div>
+                        </div>
+                        <div style="width:26px;flex:none;text-align:right;font:700 13px Manrope,sans-serif;color:#17101B">{{ b.done }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="background:#fff;border:1px solid rgba(23,16,27,.09);border-radius:16px;padding:18px">
+                  <div style="font:700 10.5px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,16,27,.4);margin-bottom:12px">Popular today</div>
+                  <div style="display:flex;flex-direction:column;gap:9px">
+                    <sc-for list="{{ styleStats }}" as="s" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <span style="width:7px;height:7px;border-radius:99px;background:#B4522A;flex:none"></span>
+                        <span style="flex:1;font:500 13.5px Manrope,sans-serif;color:rgba(23,16,27,.7)">{{ s.name }}</span>
+                        <span style="font:700 13px Manrope,sans-serif;color:#17101B">{{ s.count }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+            </div>
+
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:9px 12px 30px;background:rgba(247,241,232,.94);backdrop-filter:blur(14px);border-top:1px solid rgba(23,16,27,.08);display:flex;gap:4px">
+              <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+                <button onClick="{{ t.go }}" style="cursor:pointer;flex:1;min-height:52px;border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:12px;padding:0" style-hover="background:rgba(23,16,27,.05)">
+                  <span style="width:20px;height:20px;border-radius:6px;border:2.5px solid {{ t.color }};background: {{ t.fill }}"></span>
+                  <span style="font:700 10.5px Manrope,sans-serif;color: {{ t.color }}">{{ t.label }}</span>
+                </button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ assignOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:0;z-index:80;background:rgba(23,16,27,.5);display:flex;flex-direction:column;justify-content:flex-end">
+                <div style="background:#F7F1E8;border-radius:24px 24px 0 0;padding:20px 20px 34px;max-height:78%;overflow:auto">
+                  <div style="width:40px;height:4px;border-radius:99px;background:rgba(23,16,27,.18);margin:0 auto 16px"></div>
+                  <div style="font:400 26px/1.1 'Instrument Serif',serif;color:#17101B">Allocate {{ assignName }}</div>
+                  <div style="font:500 12.5px Manrope,sans-serif;color:rgba(23,16,27,.5);margin-top:5px;margin-bottom:16px">{{ assignStyle }} · queue {{ assignNo }}</div>
+                  <div style="display:flex;flex-direction:column;gap:9px">
+                    <sc-for list="{{ assignOptions }}" as="o" hint-placeholder-count="4">
+                      <button onClick="{{ o.pick }}" disabled="{{ o.disabled }}" style="cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;padding:13px;border-radius:14px;min-height:64px;border:1px solid {{ o.border }};background: {{ o.bg }};opacity: {{ o.opacity }}">
+                        <div style="width:40px;height:40px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;font:700 14px Manrope,sans-serif;color:#17101B;background: {{ o.avatar }}">{{ o.initials }}</div>
+                        <div style="flex:1;min-width:0">
+                          <div style="font:700 14.5px Manrope,sans-serif;color:#17101B">{{ o.name }}</div>
+                          <div style="font:500 12px Manrope,sans-serif;color:rgba(23,16,27,.52)">{{ o.sub }}</div>
+                        </div>
+                        <div style="font:700 11px Manrope,sans-serif;color: {{ o.tagColor }};text-align:right">{{ o.tag }}</div>
+                      </button>
+                    </sc-for>
+                  </div>
+                  <button onClick="{{ closeAssign }}" style="cursor:pointer;width:100%;min-height:50px;border-radius:13px;border:1px solid rgba(23,16,27,.16);background:#fff;font:700 13.5px Manrope,sans-serif;color:rgba(23,16,27,.6);margin-top:14px">Keep waiting</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:16px;right:16px;bottom:104px;z-index:90;background:#17101B;color:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:11px;box-shadow:0 12px 30px rgba(23,16,27,.35)">
+                <span style="width:8px;height:8px;border-radius:99px;background:#5FD3A6;flex:none"></span>
+                <span style="font:600 13px/1.4 Manrope,sans-serif;flex:1">{{ toast }}</span>
+              </div>
+            </sc-if>
+
+          </div>
+        </sc-if>
+      </div>
+    </x-import>
+
+    <div style="width:402px;font:400 12.5px/1.55 Manrope,sans-serif;color:rgba(23,16,27,.5);text-align:center">Try it: check in a walk-in → watch it auto-allocate → switch to the braider and tap <b>Finish client</b> → the queue and availability update together.</div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;autoAssign&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Allocation&quot;},&quot;pullNext&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Allocation&quot;},&quot;showWaitEstimate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Queue&quot;}}">
+const SAND='#F7F1E8', INK='#17101B', ACC='#B4522A', GOLD='#C9962B', GREEN='#1F7A5C';
+const DUR={'Knotless box braids':300,'Cornrows':120,'Feed-in braids':150,'Fulani braids':210,'Twists':180,'Micro braids':420,'Retouch':60};
+const STYLES=Object.keys(DUR);
+const AV=['#F3D9C8','#E7DCC4','#D9E3D5','#EFD6D6','#DDD8EA','#E3E0CE','#F0E1CB'];
+const M=60000;
+
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    const t=Date.now();
+    this.state={
+      role:null, screen:'queue', stack:[], tick:0, detailId:null, assignId:null, toast:null,
+      showAdd:false, nb:{name:'',skill:''}, form:{name:'',phone:'',style:'Knotless box braids'},
+      meId:1, seq:15,
+      braiders:[
+        {id:1,name:'Amina Sesay',skills:'Knotless · Cornrows',on:true,inAt:t-6.5*60*M,idleSince:t-4*60*M},
+        {id:2,name:'Fatou Bah',skills:'Twists · Feed-in',on:true,inAt:t-6*60*M,idleSince:t-2*60*M},
+        {id:3,name:'Zainab Kamara',skills:'Micro · Fulani',on:true,inAt:t-5*60*M,idleSince:t-38*M},
+        {id:4,name:'Mariama Jalloh',skills:'Cornrows · Kids',on:true,inAt:t-7*60*M,idleSince:t-5*60*M},
+        {id:5,name:'Isatu Conteh',skills:'Knotless · Twists',on:true,inAt:t-3*60*M,idleSince:t-12*M},
+        {id:6,name:'Hawa Turay',skills:'Feed-in · Retouch',on:false,inAt:null,idleSince:t},
+      ],
+      customers:[
+        {id:101,no:'008',name:'Kadiatu Koroma',phone:'076 214 880',style:'Cornrows',status:'completed',bid:4,inAt:t-7*60*M,startAt:t-6.8*60*M,doneAt:t-4.9*60*M},
+        {id:102,no:'009',name:'Salamatu Jah',phone:'077 901 233',style:'Retouch',status:'completed',bid:2,inAt:t-6*60*M,startAt:t-5.8*60*M,doneAt:t-4.7*60*M},
+        {id:103,no:'010',name:'Rugiatu Sesay',phone:'088 445 100',style:'Twists',status:'completed',bid:5,inAt:t-5*60*M,startAt:t-4.6*60*M,doneAt:t-1.4*60*M},
+        {id:104,no:'011',name:'Josephine Cole',phone:'076 552 019',style:'Knotless box braids',status:'in-progress',bid:1,inAt:t-4.4*60*M,startAt:t-4*60*M,doneAt:null},
+        {id:105,no:'012',name:'Adama Bangura',phone:'078 330 774',style:'Fulani braids',status:'in-progress',bid:2,inAt:t-2.3*60*M,startAt:t-2*60*M,doneAt:null},
+        {id:106,no:'013',name:'Marie Kargbo',phone:'077 118 620',style:'Micro braids',status:'in-progress',bid:4,inAt:t-5.2*60*M,startAt:t-5*60*M,doneAt:null},
+        {id:107,no:'014',name:'Fatmata Turay',phone:'076 700 415',style:'Feed-in braids',status:'waiting',bid:null,inAt:t-26*M,startAt:null,doneAt:null},
+        {id:108,no:'015',name:'Isha Mansaray',phone:'077 620 331',style:'Cornrows',status:'waiting',bid:null,inAt:t-9*M,startAt:null,doneAt:null},
+      ],
+    };
+  }
+  componentDidMount(){ this.timer=setInterval(()=>this.setState(s=>({tick:s.tick+1})),20000); }
+  componentWillUnmount(){ clearInterval(this.timer); clearTimeout(this.tt); }
+
+  // ── helpers
+  mins(ts){ return Math.max(0,Math.round((Date.now()-ts)/M)); }
+  fmt(m){ return m>=60 ? Math.floor(m/60)+'h '+String(m%60).padStart(2,'0')+'m' : m+'m'; }
+  clock(ts){ return new Date(ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }
+  initials(n){ return n.split(' ').map(w=>w[0]).slice(0,2).join(''); }
+  av(id){ return AV[id%AV.length]; }
+  busyWith(bid, cs){ return (cs||this.state.customers).find(c=>c.status==='in-progress'&&c.bid===bid); }
+  isFree(b, cs){ return b.on && !this.busyWith(b.id, cs); }
+  say(msg){ clearTimeout(this.tt); this.setState({toast:msg}); this.tt=setTimeout(()=>this.setState({toast:null}),3600); }
+  go(screen){ this.setState(s=>({screen, stack:[], detailId:null})); }
+  push(screen, extra){ this.setState(s=>({screen, stack:s.stack.concat([s.screen]), ...(extra||{})})); }
+
+  // ── allocation
+  freeBraiders(cs){ return this.state.braiders.filter(b=>this.isFree(b,cs)).sort((a,b)=>a.idleSince-b.idleSince); }
+  assign(cid, bid){
+    const now=Date.now();
+    this.setState(s=>({
+      customers:s.customers.map(c=>c.id===cid?{...c,status:'in-progress',bid,startAt:now}:c),
+      assignId:null,
+    }));
+    const b=this.state.braiders.find(x=>x.id===bid), c=this.state.customers.find(x=>x.id===cid);
+    this.say(c.name+' → '+b.name.split(' ')[0]+'. Chair is now busy.');
+  }
+  autoAssign(cs, cid){
+    const free=this.state.braiders.filter(b=>this.isFree(b,cs)).sort((a,b)=>a.idleSince-b.idleSince);
+    if(!free.length) return null;
+    return free[0].id;
+  }
+  submitCheckin=()=>{
+    const f=this.state.form, name=(f.name||'').trim()||'Walk-in guest';
+    const no=String(this.state.seq+1).padStart(3,'0'), now=Date.now(), id=Date.now();
+    const nc={id,no,name,phone:(f.phone||'').trim()||'—',style:f.style,status:'waiting',bid:null,inAt:now,startAt:null,doneAt:null};
+    const cs=this.state.customers.concat([nc]);
+    const auto=(this.props.autoAssign??true)?this.autoAssign(cs):null;
+    const b=auto?this.state.braiders.find(x=>x.id===auto):null;
+    this.setState(s=>({
+      seq:s.seq+1,
+      form:{name:'',phone:'',style:'Knotless box braids'},
+      customers:cs.map(c=>c.id===id&&auto?{...c,status:'in-progress',bid:auto,startAt:now}:c),
+      screen:'queue', stack:[],
+    }));
+    this.say(b ? 'Queue '+no+' · '+name+' auto-allocated to '+b.name.split(' ')[0]
+               : 'Queue '+no+' · '+name+' added. No braider free — waiting.');
+  }
+  complete=(cid)=>{
+    const now=Date.now();
+    const c=this.state.customers.find(x=>x.id===cid);
+    const cs=this.state.customers.map(x=>x.id===cid?{...x,status:'completed',doneAt:now}:x);
+    let msg=c.name+' completed.';
+    let bs=this.state.braiders.map(b=>b.id===c.bid?{...b,idleSince:now}:b);
+    let next=null;
+    if(this.props.pullNext??true){
+      const w=cs.filter(x=>x.status==='waiting').sort((a,b)=>a.inAt-b.inAt)[0];
+      const br=this.state.braiders.find(b=>b.id===c.bid);
+      if(w&&br&&br.on){ next=w; }
+    }
+    const final=next?cs.map(x=>x.id===next.id?{...x,status:'in-progress',bid:c.bid,startAt:now}:x):cs;
+    this.setState({customers:final, braiders:bs, detailId:null, screen:this.state.role==='braider'?'job':this.state.screen, stack:[]});
+    this.say(next? msg+' '+next.name+' (queue '+next.no+') pulled to your chair.' : msg+' You are now free.');
+  }
+
+  renderVals(){
+    const S=this.state, cs=S.customers, role=S.role;
+    const waiting=cs.filter(c=>c.status==='waiting').sort((a,b)=>a.inAt-b.inAt);
+    const active=cs.filter(c=>c.status==='in-progress').sort((a,b)=>a.startAt-b.startAt);
+    const done=cs.filter(c=>c.status==='completed').sort((a,b)=>b.doneAt-a.doneAt);
+    const free=this.freeBraiders(cs);
+    const bName=id=>{const b=S.braiders.find(x=>x.id===id);return b?b.name:'—';};
+    const showWait=this.props.showWaitEstimate??true;
+
+    // wait estimate: sort remaining times of busy chairs
+    const rem=active.map(c=>Math.max(5,(DUR[c.style]||180)-this.mins(c.startAt))).sort((a,b)=>a-b);
+    const estFor=i=>{ if(free.length>i) return 'now'; const k=i-free.length; return rem[k]!=null?'~'+this.fmt(rem[k]):'~'+this.fmt(240); };
+
+    const waitingList=waiting.map((c,i)=>({
+      ...c, key:c.id,
+      waitLabel:'waiting '+this.fmt(this.mins(c.inAt))+(showWait?' · chair '+estFor(i):''),
+      openAssign:()=>this.setState({assignId:c.id}),
+      openDetail:()=>this.push('detail',{detailId:c.id}),
+    }));
+    const activeList=active.map(c=>{
+      const el=this.mins(c.startAt), d=DUR[c.style]||180;
+      return {...c, key:c.id, braiderName:bName(c.bid), elapsedLabel:this.fmt(el),
+        pct:Math.min(100,Math.round(el/d*100))+'%',
+        openDetail:()=>this.push('detail',{detailId:c.id})};
+    });
+    const doneList=done.map(c=>({...c,key:c.id,doneLabel:this.clock(c.doneAt)}));
+
+    const braiderCards=S.braiders.map(b=>{
+      const cur=this.busyWith(b.id,cs), fr=this.isFree(b,cs);
+      const dot=!b.on?'rgba(23,16,27,.35)':fr?GREEN:ACC;
+      const doneN=done.filter(c=>c.bid===b.id).length;
+      return {
+        key:b.id, id:b.id, name:b.name, initials:this.initials(b.name), avatar:this.av(b.id), skills:b.skills,
+        statusLabel:!b.on?'Off shift':fr?'Free':'With client', dot,
+        bg:!b.on?'rgba(255,255,255,.55)':fr?'#E8F3EE':'#FBEBE3',
+        border:!b.on?'rgba(23,16,27,.10)':fr?'rgba(31,122,92,.28)':'rgba(180,82,42,.28)',
+        detail:!b.on?'Not clocked in today':fr?'Available now — idle '+this.fmt(this.mins(b.idleSince)):cur.name+' · '+cur.style,
+        footer:!b.on?'—':fr?doneN+' done today':this.fmt(this.mins(cur.startAt))+' in · '+doneN+' done',
+        shiftAction:b.on?'Clock out':'Clock in',
+        toggleShift:()=>{ if(b.on&&cur){this.say(b.name.split(' ')[0]+' still has a client — finish first.');return;}
+          this.setState(s=>({braiders:s.braiders.map(x=>x.id===b.id?{...x,on:!x.on,inAt:!x.on?Date.now():null,idleSince:Date.now()}:x)}));
+          this.say(b.name.split(' ')[0]+(b.on?' clocked out — removed from allocation.':' clocked in — available.')); },
+        tap:()=>{ if(cur) this.push('detail',{detailId:cur.id}); else this.say(b.name.split(' ')[0]+' is '+(b.on?'free and ready.':'off shift.')); },
+      };
+    });
+
+    // detail
+    const d=cs.find(c=>c.id===S.detailId)||null;
+    const tl=[];
+    if(d){
+      const step=(label,at,state)=>({label,at,ring:state==='done'?GREEN:state==='now'?ACC:'rgba(23,16,27,.18)',
+        fill:state==='pending'?'#fff':state==='now'?ACC:GREEN, line:state==='pending'?'rgba(23,16,27,.10)':'rgba(31,122,92,.35)',
+        fg:state==='pending'?'rgba(23,16,27,.35)':INK});
+      tl.push(step('Checked in · queue '+d.no,this.clock(d.inAt)+' · '+this.fmt(this.mins(d.inAt))+' ago','done'));
+      tl.push(d.startAt?step('In progress with '+bName(d.bid),this.clock(d.startAt)+' · '+this.fmt(this.mins(d.startAt))+' so far',d.status==='in-progress'?'now':'done')
+                       :step('Awaiting allocation','Not assigned yet','now'));
+      tl.push(d.doneAt?step('Completed',this.clock(d.doneAt),'done'):step('Completed','Pending','pending'));
+    }
+
+    // braider self
+    const me=S.braiders.find(b=>b.id===S.meId)||S.braiders[0];
+    const meCur=this.busyWith(me.id,cs);
+    const meDoneN=done.filter(c=>c.bid===me.id).length;
+    const meDur=meCur?(DUR[meCur.style]||180):180;
+    const meEl=meCur?this.mins(meCur.startAt):0;
+    const nextForMe=waiting[0]||null;
+
+    // owner
+    const maxDone=Math.max(1,...S.braiders.map(b=>done.filter(c=>c.bid===b.id).length));
+    const ownerRows=S.braiders.map(b=>{const n=done.filter(c=>c.bid===b.id).length;
+      return {key:b.id,first:b.name.split(' ')[0],done:n,barW:Math.max(4,Math.round(n/maxDone*100))+'%',
+        barColor:n>=maxDone?ACC:'rgba(180,82,42,.42)'};});
+    const counts={}; cs.forEach(c=>{counts[c.style]=(counts[c.style]||0)+1;});
+    const styleStats=Object.keys(counts).map(k=>({key:k,name:k,count:counts[k]})).sort((a,b)=>b.count-a.count).slice(0,4);
+    const waits=done.filter(c=>c.startAt).map(c=>Math.round((c.startAt-c.inAt)/M));
+    const busyN=S.braiders.filter(b=>b.on&&this.busyWith(b.id,cs)).length;
+    const onN=Math.max(1,S.braiders.filter(b=>b.on).length);
+
+    // assign sheet
+    const a=cs.find(c=>c.id===S.assignId)||null;
+    const assignOptions=a?S.braiders.slice().sort((x,y)=>(this.isFree(y,cs)?1:0)-(this.isFree(x,cs)?1:0)).map(b=>{
+      const cur=this.busyWith(b.id,cs), fr=this.isFree(b,cs), rec=free.length&&free[0].id===b.id;
+      return {key:b.id,name:b.name,initials:this.initials(b.name),avatar:this.av(b.id),
+        sub:!b.on?'Off shift':fr?'Free · idle '+this.fmt(this.mins(b.idleSince)):'Busy with '+cur.name,
+        tag:!b.on?'OFF':rec?'RECOMMENDED':fr?'FREE':'QUEUE BEHIND',
+        tagColor:!b.on?'rgba(23,16,27,.35)':fr?GREEN:GOLD,
+        border:rec?'rgba(31,122,92,.45)':'rgba(23,16,27,.10)', bg:rec?'#E8F3EE':'#fff',
+        opacity:b.on?'1':'.5', disabled:!b.on,
+        pick:()=>{ if(!b.on){this.say(b.name.split(' ')[0]+' is off shift.');return;} this.assign(a.id,b.id); }};
+    }):[];
+
+    const T=(id,label)=>({key:id,label,go:()=>this.go(id),
+      color:S.screen===id?ACC:'rgba(23,16,27,.4)', fill:S.screen===id?ACC:'transparent'});
+    const tabs = role==='supervisor'?[T('queue','Queue'),T('checkin','Check in'),T('grid','Chairs'),T('staff','Staff')]
+      : role==='braider'?[T('job','My chair'),T('next','Up next'),T('me','Me')]
+      : [T('owner','Today'),T('grid','Chairs'),T('staff','Staff')];
+
+    const titles={queue:['Live queue',waiting.length+' waiting · '+active.length+' in chairs'],
+      checkin:['Walk-in check-in','Name, phone, style — that\u2019s it'],
+      grid:['Braider chairs',free.length+' free of '+onN+' on shift'],
+      staff:['Staff','Roster and shifts'],
+      detail:['Customer',d?'Queue '+d.no:''],
+      job:['My chair',meCur?'With '+meCur.name:'No client right now'],
+      next:['Up next',waiting.length+' in the queue'],
+      me:[me.name.split(' ')[0],'Your shift and stats'],
+      owner:['Today','Sandra\u2019s Braiding Studio']};
+    const ti=titles[S.screen]||['',''];
+
+    const mapRoles=[
+      {key:'s',label:'Supervisor',job:'front desk',color:ACC,screens:[
+        {key:1,name:'Live queue',go:()=>{this.setState({role:'supervisor'});this.go('queue');}},
+        {key:2,name:'Check-in',go:()=>{this.setState({role:'supervisor'});this.go('checkin');}},
+        {key:3,name:'Chairs / availability',go:()=>{this.setState({role:'supervisor'});this.go('grid');}},
+        {key:4,name:'Staff & shifts',go:()=>{this.setState({role:'supervisor'});this.go('staff');}},
+        {key:5,name:'Customer timeline',go:()=>{this.setState({role:'supervisor',detailId:active[0]?active[0].id:cs[0].id,stack:['queue']});this.setState({screen:'detail'});}},
+      ]},
+      {key:'b',label:'Braider',job:'her own chair',color:GOLD,screens:[
+        {key:1,name:'My chair',go:()=>{this.setState({role:'braider'});this.go('job');}},
+        {key:2,name:'Up next',go:()=>{this.setState({role:'braider'});this.go('next');}},
+        {key:3,name:'Shift / clock',go:()=>{this.setState({role:'braider'});this.go('me');}},
+      ]},
+      {key:'o',label:'Owner',job:'the day',color:GREEN,screens:[
+        {key:1,name:'Day summary',go:()=>{this.setState({role:'owner'});this.go('owner');}},
+        {key:2,name:'Chairs',go:()=>{this.setState({role:'owner'});this.go('grid');}},
+        {key:3,name:'Staff',go:()=>{this.setState({role:'owner'});this.go('staff');}},
+      ]},
+    ];
+
+    const nextNo=String(S.seq+1).padStart(3,'0');
+    const roleLabels={supervisor:'Supervisor · Front desk',braider:me.name,owner:'Owner'};
+
+    return {
+      mapRoles, crumb: role? (roleLabels[role]+' · '+ti[0]) : 'Sign in',
+      isLogin: role===null, isApp: role!==null,
+      roleCards:[
+        {key:'s',name:'Sandra Musa',sub:'Owner · full access',initials:'SM',color:'#D9E3D5',go:()=>this.setState({role:'owner',screen:'owner',stack:[]})},
+        {key:'v',name:'Grace Kanu',sub:'Supervisor · desk & allocation',initials:'GK',color:'#F3D9C8',go:()=>this.setState({role:'supervisor',screen:'queue',stack:[]})},
+        {key:'b',name:'Amina Sesay',sub:'Braider · chair 1',initials:'AS',color:'#EFD6D6',go:()=>this.setState({role:'braider',screen:'job',stack:[],meId:1})},
+      ],
+      roleLabel:roleLabels[role]||'', screenTitle:ti[0], screenSub:ti[1],
+      canBack:S.stack.length>0, back:()=>this.setState(s=>({screen:s.stack[s.stack.length-1],stack:s.stack.slice(0,-1),detailId:null})),
+      logout:()=>this.setState({role:null,screen:'queue',stack:[],detailId:null,assignId:null}),
+      tabs,
+      isQueue:S.screen==='queue', isCheckin:S.screen==='checkin', isGrid:S.screen==='grid',
+      isStaff:S.screen==='staff', isDetail:S.screen==='detail'&&!!d, isJob:S.screen==='job',
+      isNext:S.screen==='next', isMe:S.screen==='me', isOwner:S.screen==='owner',
+      nWaiting:waiting.length, nActive:active.length, nFree:free.length, nDone:done.length,
+      waitingList, activeList, doneList, noWaiting:waiting.length===0, braiderCards,
+      nextNo, fName:S.form.name, fPhone:S.form.phone,
+      setName:e=>{const v=e.target.value;this.setState(s=>({form:{...s.form,name:v}}));},
+      setPhone:e=>{const v=e.target.value;this.setState(s=>({form:{...s.form,phone:v}}));},
+      styleChips:STYLES.map(n=>({key:n,name:n,
+        bg:S.form.style===n?INK:'#FCFAF6', fg:S.form.style===n?'#fff':'rgba(23,16,27,.7)',
+        border:S.form.style===n?INK:'rgba(23,16,27,.14)',
+        pick:()=>this.setState(s=>({form:{...s.form,style:n}}))})),
+      allocPreview: (this.props.autoAssign??true)
+        ? (free.length? 'Auto-allocation will seat this customer with '+free[0].name+' (free '+this.fmt(this.mins(free[0].idleSince))+') — you can override.'
+                      : 'All '+onN+' chairs are busy. This customer joins the queue at position '+(waiting.length+1)+', chair in '+(rem[0]!=null?this.fmt(rem[0]):'~2h')+'.')
+        : 'Auto-allocation is off — this customer will sit in the waiting list until you allocate them.',
+      submitCheckin:this.submitCheckin,
+      showAdd:S.showAdd, toggleAdd:()=>this.setState(s=>({showAdd:!s.showAdd})),
+      nbName:S.nb.name, nbSkill:S.nb.skill,
+      setNbName:e=>{const v=e.target.value;this.setState(s=>({nb:{...s.nb,name:v}}));},
+      setNbSkill:e=>{const v=e.target.value;this.setState(s=>({nb:{...s.nb,skill:v}}));},
+      addBraider:()=>{ const n=(S.nb.name||'').trim(); if(!n){this.say('Enter a name first.');return;}
+        const id=Math.max(...S.braiders.map(b=>b.id))+1;
+        this.setState(s=>({braiders:s.braiders.concat([{id,name:n,skills:(s.nb.skill||'General braiding').trim(),on:true,inAt:Date.now(),idleSince:Date.now()}]),nb:{name:'',skill:''},showAdd:false}));
+        this.say(n.split(' ')[0]+' registered and clocked in — now available.'); },
+      dNo:d?d.no:'', dName:d?d.name:'', dPhone:d?d.phone:'', dStyle:d?d.style:'',
+      dBraider:d?(d.bid?bName(d.bid):'Unassigned'):'', dTimeline:tl,
+      dCanAct:!!(d&&d.status==='in-progress'),
+      dComplete:()=>d&&this.complete(d.id),
+      dReassign:()=>{ if(!d)return; this.setState(s=>({customers:s.customers.map(c=>c.id===d.id?{...c,status:'waiting',bid:null,startAt:null}:c),assignId:d.id,screen:'queue',stack:[],detailId:null})); this.say(d.name+' returned to the queue — pick a new braider.'); },
+      meName:me.name, meInitials:this.initials(me.name), meSkills:me.skills,
+      meBusy:!!meCur, meFree:!meCur&&me.on,
+      meCustomerName:meCur?meCur.name:'', meCustomerStyle:meCur?meCur.style:'', meCustomerNo:meCur?meCur.no:'',
+      meElapsed:this.fmt(meEl), mePct:Math.min(100,Math.round(meEl/meDur*100))+'%',
+      meEta:meCur?(meEl>=meDur?'over the '+this.fmt(meDur)+' average':this.fmt(meDur-meEl)+' left of a '+this.fmt(meDur)+' style'):'',
+      meFinish:()=>meCur&&this.complete(meCur.id),
+      meFreeSince:'Free for '+this.fmt(this.mins(me.idleSince)),
+      hasNextForMe:!!(nextForMe&&!meCur&&me.on), nextForMeName:nextForMe?nextForMe.name:'', nextForMeNo:nextForMe?nextForMe.no:'',
+      meTakeNext:()=>nextForMe&&this.assign(nextForMe.id,me.id),
+      meDone:meDoneN, meHours:me.on?this.fmt(this.mins(me.inAt)):'—',
+      meAvg:meDoneN?this.fmt(Math.round(done.filter(c=>c.bid===me.id&&c.startAt).reduce((a,c)=>a+(c.doneAt-c.startAt)/M,0)/meDoneN)):'—',
+      meStatusLabel:!me.on?'Off shift':meCur?'With client':'Free',
+      meChipDot:!me.on?'rgba(23,16,27,.4)':meCur?ACC:GREEN,
+      meChipBg:!me.on?'rgba(23,16,27,.06)':meCur?'#FBEBE3':'#E8F3EE',
+      meShift:me.on?'Clocked in '+this.clock(me.inAt)+' · '+this.fmt(this.mins(me.inAt)):'Not clocked in',
+      meShiftAction:me.on?'Clock out':'Clock in', meShiftBg:me.on?'rgba(23,16,27,.55)':GREEN,
+      meToggleShift:()=>{ if(me.on&&meCur){this.say('Finish your client before clocking out.');return;}
+        this.setState(s=>({braiders:s.braiders.map(x=>x.id===me.id?{...x,on:!x.on,inAt:!x.on?Date.now():null,idleSince:Date.now()}:x)}));
+        this.say(me.on?'Clocked out — the desk can no longer allocate to you.':'Clocked in — you are on the free list.'); },
+      today:new Date().toLocaleDateString([], {weekday:'long',day:'numeric',month:'long'}),
+      avgWait:waits.length?this.fmt(Math.round(waits.reduce((a,b)=>a+b,0)/waits.length)):'—',
+      utilisation:busyN+'/'+onN, ownerRows, styleStats,
+      assignOpen:!!a, assignName:a?a.name:'', assignNo:a?a.no:'', assignStyle:a?a.style:'',
+      assignOptions, closeAssign:()=>this.setState({assignId:null}),
+      toastOn:!!S.toast, toast:S.toast||'',
+    };
+  }
+}
+
+</script>
+</body>
+</html>
