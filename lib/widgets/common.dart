@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 
 import '../theme/tokens.dart';
@@ -30,22 +32,30 @@ class BFCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(18),
-    this.background = BF.white,
+    this.background,
     this.radius = 16,
     this.border,
     this.leftAccent,
+    this.blur = false,
   });
 
   final Widget child;
   final EdgeInsets padding;
-  final Color background;
+
+  /// Defaults to [BF.glass] — translucent, so the page gradient shows through.
+  final Color? background;
   final double radius;
   final Color? border;
   final Color? leftAccent;
 
+  /// Applies a real backdrop blur. Reserved for floating chrome: a blur layer
+  /// per row in a long list is expensive, and over a flat gradient ground the
+  /// translucent fill alone is visually near-identical.
+  final bool blur;
+
   @override
   Widget build(BuildContext context) {
-    final body = Container(
+    Widget body = Container(
       decoration: BF.card(
         background: background,
         radius: radius,
@@ -54,6 +64,17 @@ class BFCard extends StatelessWidget {
       padding: padding,
       child: child,
     );
+
+    if (blur) {
+      body = ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: BF.blurSigma, sigmaY: BF.blurSigma),
+          child: body,
+        ),
+      );
+    }
+
     if (leftAccent == null) return body;
 
     // `border-left: 3px solid <accent>` — drawn over the hairline border and
@@ -170,7 +191,7 @@ class BFButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onTap,
-    this.background = BF.ink,
+    this.background,
     this.foreground = BF.white,
     this.minHeight = 54,
     this.radius = 14,
@@ -181,7 +202,10 @@ class BFButton extends StatelessWidget {
 
   final String label;
   final VoidCallback? onTap;
-  final Color background;
+
+  /// Null paints DSE's accent gradient with a matching glow — the primary
+  /// call to action. Pass a colour for secondary and destructive buttons.
+  final Color? background;
   final Color foreground;
   final double minHeight;
   final double radius;
@@ -191,16 +215,18 @@ class BFButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primary = background == null;
+
     // Material asserts that `shape` and `borderRadius` are never both set, so
     // the radius rides on the shape alone. Passing both looked fine in the
     // release web build only because assertions are stripped there.
-    return Semantics(
+    final button = Semantics(
       button: true,
       enabled: onTap != null,
       label: label,
       child: ExcludeSemantics(
         child: Material(
-          color: background,
+          color: primary ? Colors.transparent : background,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
             side: border == null ? BorderSide.none : BorderSide(color: border!),
@@ -222,6 +248,19 @@ class BFButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    if (!primary) return button;
+
+    // The gradient and its glow sit behind the Material so the ink ripple
+    // still lands on top of them.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: BF.accentGradient,
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: onTap == null ? null : BF.glow(BF.acc),
+      ),
+      child: button,
     );
   }
 }
@@ -317,7 +356,7 @@ class _ControlledFieldState extends State<_ControlledField> {
     return Container(
       constraints: BoxConstraints(minHeight: widget.minHeight),
       decoration: BoxDecoration(
-        color: focused ? BF.white : BF.field,
+        color: focused ? BF.whiteA(.09) : BF.field,
         borderRadius: BorderRadius.circular(widget.radius),
         border: Border.all(color: focused ? BF.acc : BF.inkA(.16)),
       ),

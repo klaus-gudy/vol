@@ -121,7 +121,7 @@ class DetailScreen extends StatelessWidget {
                 child: BFButton(
                   label: 'Reassign',
                   onTap: () => app.reassign(d),
-                  background: BF.white,
+                  background: BF.glass,
                   foreground: BF.plum,
                   border: BF.inkA(.16),
                   minHeight: 50,
@@ -204,7 +204,7 @@ class _TimelineRow extends StatelessWidget {
     final fill = switch (step.state) {
       _StepState.done => BF.green,
       _StepState.now => BF.acc,
-      _StepState.pending => BF.white,
+      _StepState.pending => BF.sand,
     };
     final line = step.state == _StepState.pending
         ? BF.inkA(.10)

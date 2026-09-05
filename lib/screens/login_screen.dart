@@ -20,27 +20,27 @@ class LoginScreen extends StatelessWidget {
         name: 'Sandra Musa',
         sub: 'Owner · full access',
         initials: 'SM',
-        color: const Color(0xFFD9E3D5),
+        color: BF.green.withValues(alpha: .24),
         onTap: () => app.signIn(Role.owner, BFScreen.owner),
       ),
       _RoleCard(
         name: 'Grace Kanu',
         sub: 'Supervisor · desk & allocation',
         initials: 'GK',
-        color: const Color(0xFFF3D9C8),
+        color: BF.acc.withValues(alpha: .26),
         onTap: () => app.signIn(Role.supervisor, BFScreen.queue),
       ),
       _RoleCard(
         name: 'Amina Sesay',
         sub: 'Braider · chair 1',
         initials: 'AS',
-        color: const Color(0xFFEFD6D6),
+        color: BF.teal.withValues(alpha: .24),
         onTap: () => app.signIn(Role.braider, BFScreen.job, asBraider: 1),
       ),
     ];
 
-    return Container(
-      color: BF.ink,
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: BF.bgGradient),
       child: Stack(
         children: [
           // radial terracotta glow across the top third
@@ -52,10 +52,14 @@ class LoginScreen extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
-                  center: const Alignment(-0.6, -1),
-                  radius: 1.2,
-                  colors: [BF.acc.withValues(alpha: .55), Colors.transparent],
-                  stops: const [0, .7],
+                  center: const Alignment(0.35, -1),
+                  radius: 1.25,
+                  colors: [
+                    BF.teal.withValues(alpha: .30),
+                    BF.acc.withValues(alpha: .16),
+                    Colors.transparent,
+                  ],
+                  stops: const [0, .38, .8],
                 ),
               ),
             ),
@@ -120,7 +124,7 @@ class _RoleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: BF.whiteA(.07),
+      color: BF.glass,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,

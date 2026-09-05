@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 
 import '../state/app_scope.dart';
@@ -39,65 +41,86 @@ class AssignSheet extends StatelessWidget {
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height * .78,
               ),
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: BF.sand,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
                 ),
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 34),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: BF.inkA(.18),
-                            borderRadius: BorderRadius.circular(99),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: BF.blurSigma,
+                    sigmaY: BF.blurSigma,
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          BF.sandEnd.withValues(alpha: .88),
+                          BF.sand.withValues(alpha: .96),
+                        ],
+                      ),
+                      border: Border(top: BorderSide(color: BF.line10)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 34),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Center(
+                            child: Container(
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: BF.inkA(.18),
+                                borderRadius: BorderRadius.circular(99),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Allocate ${target.name}',
+                            style: BF.serif(26, height: 1.1),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            '${target.style} · queue ${target.no}',
+                            style: BF.sans(12.5, 500, color: BF.inkA(.5)),
+                          ),
+                          const SizedBox(height: 16),
+                          for (final b in options) ...[
+                            _Option(
+                              braiderId: b.id,
+                              recommended: b.id == recommendedId,
+                              onPick: () {
+                                if (!b.on) {
+                                  app.say('${b.firstName} is off shift.');
+                                  return;
+                                }
+                                app.assign(target.id, b.id);
+                              },
+                            ),
+                            const SizedBox(height: 9),
+                          ],
+                          const SizedBox(height: 5),
+                          BFButton(
+                            label: 'Keep waiting',
+                            onTap: app.closeAssign,
+                            background: BF.glass,
+                            foreground: BF.inkA(.6),
+                            border: BF.inkA(.16),
+                            minHeight: 50,
+                            radius: 13,
+                            fontSize: 13.5,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Allocate ${target.name}',
-                        style: BF.serif(26, height: 1.1),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        '${target.style} · queue ${target.no}',
-                        style: BF.sans(12.5, 500, color: BF.inkA(.5)),
-                      ),
-                      const SizedBox(height: 16),
-                      for (final b in options) ...[
-                        _Option(
-                          braiderId: b.id,
-                          recommended: b.id == recommendedId,
-                          onPick: () {
-                            if (!b.on) {
-                              app.say('${b.firstName} is off shift.');
-                              return;
-                            }
-                            app.assign(target.id, b.id);
-                          },
-                        ),
-                        const SizedBox(height: 9),
-                      ],
-                      const SizedBox(height: 5),
-                      BFButton(
-                        label: 'Keep waiting',
-                        onTap: app.closeAssign,
-                        background: BF.white,
-                        foreground: BF.inkA(.6),
-                        border: BF.inkA(.16),
-                        minHeight: 50,
-                        radius: 13,
-                        fontSize: 13.5,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -151,7 +174,7 @@ class _Option extends StatelessWidget {
       opacity: b.on ? 1 : .5,
       child: Container(
         decoration: BoxDecoration(
-          color: recommended ? BF.doneBg : BF.white,
+          color: recommended ? BF.doneBg : BF.glass,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: recommended ? BF.green.withValues(alpha: .45) : BF.line10,

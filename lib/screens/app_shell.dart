@@ -34,8 +34,8 @@ class AppShell extends StatelessWidget {
     final keyboard = MediaQuery.viewInsetsOf(context).bottom;
     final typing = keyboard > 0;
 
-    return ColoredBox(
-      color: BF.sand,
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: BF.bgGradient),
       child: Stack(
         children: [
           Column(
@@ -107,8 +107,7 @@ class _Header extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: BF.sand,
-        border: Border(bottom: BorderSide(color: BF.inkA(.07))),
+        border: Border(bottom: BorderSide(color: BF.line)),
       ),
       padding: EdgeInsets.fromLTRB(
         20,
@@ -151,7 +150,7 @@ class _Header extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Material(
-              color: BF.white,
+              color: BF.glass,
               borderRadius: BorderRadius.circular(9),
               child: InkWell(
                 onTap: app.logout,
@@ -229,7 +228,7 @@ class _SquareButton extends StatelessWidget {
       button: true,
       label: 'Back',
       child: Material(
-        color: BF.white,
+        color: BF.glass,
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
           onTap: onTap,
@@ -283,11 +282,11 @@ class _TabBar extends StatelessWidget {
 
     return ClipRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        filter: ImageFilter.blur(sigmaX: BF.blurSigma, sigmaY: BF.blurSigma),
         child: Container(
           decoration: BoxDecoration(
-            color: BF.sand.withValues(alpha: .94),
-            border: Border(top: BorderSide(color: BF.inkA(.08))),
+            color: BF.glassStrong,
+            border: Border(top: BorderSide(color: BF.line)),
           ),
           padding: EdgeInsets.fromLTRB(
             12,
@@ -421,8 +420,9 @@ class _ToastState extends State<_Toast> {
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  color: BF.ink,
+                  color: BF.deep.withValues(alpha: .92),
                   borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: BF.line10),
                   boxShadow: [
                     BoxShadow(
                       color: BF.ink.withValues(alpha: .35),
@@ -445,7 +445,7 @@ class _ToastState extends State<_Toast> {
                     Expanded(
                       child: Text(
                         _shown,
-                        style: BF.sans(13, 600, color: BF.white, height: 1.4),
+                        style: BF.sans(13, 600, color: BF.glass, height: 1.4),
                       ),
                     ),
                   ],

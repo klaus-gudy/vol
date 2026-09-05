@@ -136,7 +136,7 @@ class _StyleChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? BF.ink : BF.field,
+      color: selected ? BF.acc : BF.field,
       borderRadius: BorderRadius.circular(11),
       child: InkWell(
         onTap: onTap,
@@ -148,7 +148,7 @@ class _StyleChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(11),
-            border: Border.all(color: selected ? BF.ink : BF.inkA(.14)),
+            border: Border.all(color: selected ? BF.acc : BF.line),
           ),
           child: Text(
             name,

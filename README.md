@@ -59,6 +59,32 @@ flutter test
   non-uniform `Border` throws only at paint time — invisible to the analyser,
   and invisible in a release web build where assertions are stripped.
 
+## Theme
+
+The palette follows the DSE investor portal (investor.dse.co.tz), read off its
+computed styles rather than eyeballed:
+
+| Role | Value | Source |
+| --- | --- | --- |
+| Ground gradient | `#0A1628` → `#0F1E32` | `--background-start-rgb` / `--background-end-rgb` |
+| Raised surface | `#132035` | DSE card colour |
+| Text | `#E2E8F0` | portal body colour |
+| Accent gradient | `#10B981` → `#2DD4BF` → `#09A0DB` | portal CTA |
+| Glass | `rgba(255,255,255,.15)` + `blur(40px)` | portal nav pill |
+
+Both projects already used **Manrope**, so only colour and surface treatment
+changed; Instrument Serif is retained for display type.
+
+**On the glass:** a real `BackdropFilter` costs a full offscreen render pass, so
+it is reserved for floating chrome — the tab bar, the allocation sheet — where
+there is genuinely something moving behind it. Cards use a translucent fill and
+a light hairline instead. Over a flat gradient ground the two are visually
+near-identical, and a blur layer per row in a six-item list is not.
+
+Token *names* were kept from the original warm-sand theme: `ink` is the colour
+you write with, so on a dark ground it is light, and the ~70 `inkA()` muted-text
+call sites stayed correct without edits.
+
 ## Layout notes
 
 - **Data is in-memory and seeded.** There is no persistence layer; a reload

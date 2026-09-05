@@ -23,7 +23,7 @@ class StaffScreen extends StatelessWidget {
           child: BFButton(
             label: '+ Register a braider',
             onTap: app.toggleAdd,
-            background: BF.white,
+            background: BF.glass,
             foreground: BF.plum,
             minHeight: 48,
             radius: 13,
@@ -123,7 +123,7 @@ class _StaffRow extends StatelessWidget {
             label: b.on ? 'Clock out' : 'Clock in',
             onTap: () => app.toggleShift(b.id),
             background: !b.on
-                ? BF.white.withValues(alpha: .55)
+                ? BF.glassDim
                 : free
                 ? BF.doneBg
                 : BF.progBg,

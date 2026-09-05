@@ -110,7 +110,8 @@ class MeScreen extends StatelessWidget {
               BFButton(
                 label: me.on ? 'Clock out' : 'Clock in',
                 onTap: app.toggleMyShift,
-                background: me.on ? BF.inkA(.55) : BF.green,
+                background: me.on ? BF.glassStrong : BF.green,
+                border: me.on ? BF.line10 : null,
                 minHeight: 46,
                 radius: 12,
                 fontSize: 13,

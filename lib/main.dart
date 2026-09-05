@@ -39,10 +39,12 @@ class _BraidflowAppState extends State<BraidflowApp> {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
+          brightness: Brightness.dark,
           fontFamily: 'Manrope',
           scaffoldBackgroundColor: BF.sand,
           colorScheme: ColorScheme.fromSeed(
             seedColor: BF.acc,
+            brightness: Brightness.dark,
             primary: BF.acc,
             surface: BF.sand,
           ),
@@ -63,13 +65,10 @@ class _Root extends StatelessWidget {
     final signedIn = app.role != null;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: signedIn
-          ? SystemUiOverlayStyle.dark.copyWith(
-              statusBarColor: Colors.transparent,
-            )
-          : SystemUiOverlayStyle.light.copyWith(
-              statusBarColor: Colors.transparent,
-            ),
+      // The whole app is dark now, so status bar icons are light throughout.
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
       child: Scaffold(
         backgroundColor: BF.canvas,
         // The keyboard is handled inside the scrolling body, so the tab bar

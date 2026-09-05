@@ -88,7 +88,7 @@ class _ChairCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: !b.on
-              ? BF.white.withValues(alpha: .55)
+              ? BF.glassDim
               : free
               ? BF.doneBg
               : BF.progBg,

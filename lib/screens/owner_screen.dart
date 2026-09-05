@@ -56,8 +56,10 @@ class OwnerScreen extends StatelessWidget {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: BF.ink,
+            color: BF.deep,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: BF.line10),
+            boxShadow: BF.glow(BF.acc, opacity: .18),
           ),
           padding: const EdgeInsets.all(22),
           child: Column(

@@ -232,7 +232,7 @@ class _DoneRow extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: BF.white.withValues(alpha: .6),
+        color: BF.glassDim,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: BF.inkA(.07)),
       ),
