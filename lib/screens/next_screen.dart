@@ -55,10 +55,12 @@ class NextScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'waiting ${app.fmt(app.minsSince(c.checkedInAt))}',
-                    textAlign: TextAlign.right,
-                    style: BF.sans(11.5, 600, color: BF.inkA(.42)),
+                  Flexible(
+                    child: Text(
+                      'waiting ${app.fmt(app.minsSince(c.checkedInAt))}',
+                      textAlign: TextAlign.right,
+                      style: BF.sans(11.5, 600, color: BF.inkA(.42)),
+                    ),
                   ),
                 ],
               ),

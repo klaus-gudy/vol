@@ -10,18 +10,23 @@ import 'theme/tokens.dart';
 void main() => runApp(const BraidflowApp());
 
 class BraidflowApp extends StatefulWidget {
-  const BraidflowApp({super.key});
+  const BraidflowApp({super.key, this.state});
+
+  /// Injected by tests so they can drive and inspect the store. In the app
+  /// this is null and the widget owns its own [AppState].
+  final AppState? state;
 
   @override
   State<BraidflowApp> createState() => _BraidflowAppState();
 }
 
 class _BraidflowAppState extends State<BraidflowApp> {
-  final AppState _state = AppState();
+  late final AppState _state = widget.state ?? AppState();
 
   @override
   void dispose() {
-    _state.dispose();
+    // Only dispose what we created; an injected store belongs to the caller.
+    if (widget.state == null) _state.dispose();
     super.dispose();
   }
 
@@ -108,12 +113,13 @@ class PhoneFrame extends StatelessWidget {
             width: designWidth,
             height: height,
             child: MediaQuery(
-              // The artboard has no notch or home indicator, so drop the
-              // host window's insets rather than inheriting desktop padding.
+              // The artboard has no notch or home indicator, so substitute
+              // fixed padding rather than inheriting the desktop window's.
+              // viewInsets is deliberately left alone — it carries the
+              // keyboard height that AppShell needs to scroll around.
               data: MediaQuery.of(context).copyWith(
                 padding: const EdgeInsets.only(top: 24, bottom: 12),
                 viewPadding: const EdgeInsets.only(top: 24, bottom: 12),
-                viewInsets: EdgeInsets.zero,
               ),
               child: child,
             ),

@@ -28,6 +28,12 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
 
+    // While the on-screen keyboard is up the tab bar is hidden and its space
+    // handed back to the scroll view, so a focused field and the submit
+    // button can be scrolled clear of the keyboard.
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    final typing = keyboard > 0;
+
     return ColoredBox(
       color: BF.sand,
       child: Stack(
@@ -40,15 +46,21 @@ class AppShell extends StatelessWidget {
                   // Keyed per screen so switching tabs starts at the top
                   // rather than inheriting the previous screen's offset.
                   key: ValueKey(app.screen),
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    16,
+                    20,
+                    (typing ? 24 : 120) + keyboard,
+                  ),
                   child: _body(app.screen),
                 ),
               ),
             ],
           ),
-          const Positioned(left: 0, right: 0, bottom: 0, child: _TabBar()),
+          if (!typing)
+            const Positioned(left: 0, right: 0, bottom: 0, child: _TabBar()),
           if (app.assignTarget != null) const AssignSheet(),
-          if (app.toast != null) _Toast(app.toast!),
+          _Toast(app.toast),
         ],
       ),
     );
@@ -108,7 +120,7 @@ class _Header extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (app.canBack) ...[
-            _SquareButton(label: '‹', onTap: app.back),
+            _SquareButton(onTap: app.back),
             const SizedBox(width: 12),
           ],
           Expanded(
@@ -206,31 +218,36 @@ class _Header extends StatelessWidget {
 }
 
 class _SquareButton extends StatelessWidget {
-  const _SquareButton({required this.label, required this.onTap});
+  const _SquareButton({required this.onTap});
 
-  final String label;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: 4),
-    child: Material(
-      color: BF.white,
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: onTap,
+    child: Semantics(
+      button: true,
+      label: 'Back',
+      child: Material(
+        color: BF.white,
         borderRadius: BorderRadius.circular(10),
-        child: Container(
-          width: 34,
-          height: 34,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: BF.inkA(.12)),
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 16, color: BF.plum),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: BF.inkA(.12)),
+            ),
+            child: const BFIcon(
+              BFIconType.chevronLeft,
+              color: BF.plum,
+              size: 17,
+              strokeWidth: 2.4,
+            ),
           ),
         ),
       ),
@@ -313,28 +330,35 @@ class _Tab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = active ? BF.acc : BF.inkA(.4);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 52),
-          alignment: Alignment.center,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // The active tab thickens its stroke as well as taking the
-              // accent colour, so the state survives a greyscale screenshot.
-              BFIcon(
-                icon,
-                color: color,
-                size: 22,
-                strokeWidth: active ? 2.2 : 1.8,
+    return Semantics(
+      button: true,
+      selected: active,
+      label: label,
+      child: ExcludeSemantics(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 52),
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // The active tab thickens its stroke as well as taking the
+                  // accent colour, so the state survives a greyscale screenshot.
+                  BFIcon(
+                    icon,
+                    color: color,
+                    size: 22,
+                    strokeWidth: active ? 2.2 : 1.8,
+                  ),
+                  const SizedBox(height: 5),
+                  Text(label, style: BF.sans(10.5, 700, color: color)),
+                ],
               ),
-              const SizedBox(height: 5),
-              Text(label, style: BF.sans(10.5, 700, color: color)),
-            ],
+            ),
           ),
         ),
       ),
@@ -342,48 +366,93 @@ class _Tab extends StatelessWidget {
   }
 }
 
-class _Toast extends StatelessWidget {
+class _Toast extends StatefulWidget {
   const _Toast(this.message);
 
-  final String message;
+  /// Null while nothing is showing. The last non-null value is retained so
+  /// the card still has text to render on the way out.
+  final String? message;
+
+  @override
+  State<_Toast> createState() => _ToastState();
+}
+
+class _ToastState extends State<_Toast> {
+  String _shown = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _shown = widget.message ?? '';
+  }
+
+  @override
+  void didUpdateWidget(covariant _Toast old) {
+    super.didUpdateWidget(old);
+    // Keep the outgoing text during the fade; only adopt new copy.
+    if (widget.message != null) _shown = widget.message!;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final typing = media.viewInsets.bottom > 0;
+    final visible = widget.message != null;
+
     return Positioned(
       left: 16,
       right: 16,
-      bottom: 104 + MediaQuery.of(context).padding.bottom,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: BF.ink,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: BF.ink.withValues(alpha: .35),
-              blurRadius: 30,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: BF.mint,
-                shape: BoxShape.circle,
+      bottom:
+          (typing ? 16 : 104) + media.padding.bottom + media.viewInsets.bottom,
+      child: IgnorePointer(
+        child: AnimatedSlide(
+          offset: visible ? Offset.zero : const Offset(0, .35),
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: AnimatedOpacity(
+            opacity: visible ? 1 : 0,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            child: Semantics(
+              liveRegion: true,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: BF.ink,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: BF.ink.withValues(alpha: .35),
+                      blurRadius: 30,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: BF.mint,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 11),
+                    Expanded(
+                      child: Text(
+                        _shown,
+                        style: BF.sans(13, 600, color: BF.white, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(width: 11),
-            Expanded(
-              child: Text(
-                message,
-                style: BF.sans(13, 600, color: BF.white, height: 1.4),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

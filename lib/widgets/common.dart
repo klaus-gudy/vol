@@ -126,14 +126,23 @@ class QueueBadge extends StatelessWidget {
   final double fontSize;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: size,
-    height: size,
+  Widget build(BuildContext context) => Semantics(
+    label: 'Queue number $no',
+    child: ExcludeSemantics(child: _badge()),
+  );
+
+  Widget _badge() => Container(
+    // minWidth/minHeight rather than a fixed box: at large accessibility
+    // text sizes the number and caption need more room, and the row this
+    // sits in is content-sized, so growing is harmless.
+    constraints: BoxConstraints(minWidth: size, minHeight: size),
+    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
     decoration: BoxDecoration(
       color: background,
       borderRadius: BorderRadius.circular(12),
     ),
     child: Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(no, style: BF.sans(fontSize, 800, color: foreground, height: 1)),
@@ -182,27 +191,34 @@ class BFButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: background,
-      borderRadius: BorderRadius.circular(radius),
-      shape: border != null
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radius),
-              side: BorderSide(color: border!),
-            )
-          : null,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(radius),
-        child: Container(
-          width: expand ? double.infinity : null,
-          constraints: BoxConstraints(minHeight: minHeight),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: BF.sans(fontSize, 700, color: foreground),
+    // Material asserts that `shape` and `borderRadius` are never both set, so
+    // the radius rides on the shape alone. Passing both looked fine in the
+    // release web build only because assertions are stripped there.
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: label,
+      child: ExcludeSemantics(
+        child: Material(
+          color: background,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+            side: border == null ? BorderSide.none : BorderSide(color: border!),
+          ),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(radius),
+            child: Container(
+              width: expand ? double.infinity : null,
+              constraints: BoxConstraints(minHeight: minHeight),
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: BF.sans(fontSize, 700, color: foreground),
+              ),
+            ),
           ),
         ),
       ),

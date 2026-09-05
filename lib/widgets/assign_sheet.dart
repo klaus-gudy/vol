@@ -183,10 +183,12 @@ class _Option extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  tag,
-                  textAlign: TextAlign.right,
-                  style: BF.sans(11, 700, color: tagColor),
+                Flexible(
+                  child: Text(
+                    tag,
+                    textAlign: TextAlign.right,
+                    style: BF.sans(11, 700, color: tagColor),
+                  ),
                 ),
               ],
             ),

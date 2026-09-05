@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
 import '../theme/tokens.dart';
+import '../widgets/bf_icons.dart';
 import '../widgets/common.dart';
 
 /// The supervisor's home. Three counters, then the queue split by status:
@@ -205,7 +206,12 @@ class _ActiveRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Text('›', style: TextStyle(fontSize: 17, color: BF.inkA(.28))),
+              BFIcon(
+                BFIconType.chevronRight,
+                color: BF.inkA(.28),
+                size: 16,
+                strokeWidth: 2.4,
+              ),
             ],
           ),
         ),

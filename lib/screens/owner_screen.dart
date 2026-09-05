@@ -73,11 +73,13 @@ class OwnerScreen extends StatelessWidget {
                     style: BF.serif(58, color: BF.white, height: 1),
                   ),
                   const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 9),
-                    child: Text(
-                      'clients completed',
-                      style: BF.sans(13, 500, color: BF.whiteA(.6)),
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 9),
+                      child: Text(
+                        'clients completed',
+                        style: BF.sans(13, 500, color: BF.whiteA(.6)),
+                      ),
                     ),
                   ),
                 ],

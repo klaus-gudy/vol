@@ -1,17 +1,77 @@
-# braidflow
+# Braidflow
 
-A new Flutter project.
+Salon operations for a braiding studio. One queue, three views: the front desk
+checks a walk-in in under ten seconds, the braider only ever sees her own chair,
+and the owner sees the day.
 
-## Getting Started
+A Flutter port of the `Braidflow.dc.html` design canvas, kept in
+[`design_source/`](design_source/) as the reference spec.
 
-This project is a starting point for a Flutter application.
+## The one state machine
 
-A few resources to get you started if this is your first Flutter project:
+```
+WAITING  ──▶  IN PROGRESS  ──▶  COMPLETED
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+| Trigger | What happens |
+| --- | --- |
+| 1 | Supervisor checks in a walk-in → queue number issued |
+| 2 | Auto-allocation to the longest-idle free braider (supervisor can override) |
+| 3 | Braider taps **Finish client** → she flips to free and the next waiting customer is pulled to her chair |
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**Braider availability is never entered by hand.** It is derived from "does this
+braider hold an in-progress customer, and is she clocked in". That is what keeps
+the supervisor's and the braider's views in sync — there is no separate
+availability record to drift.
+
+## Screens
+
+| Role | Tabs |
+| --- | --- |
+| Supervisor · front desk | Queue · Check in · Chairs · Staff |
+| Braider | My chair · Up next · Me |
+| Owner | Today · Chairs · Staff |
+
+Plus a customer timeline reachable from the queue, and an allocation sheet that
+flags the braider auto-allocation would have picked.
+
+## Running it
+
+```bash
+flutter run -d chrome
+```
+
+Android and iOS targets are scaffolded. iOS needs a full Xcode install (the
+project was developed against Command Line Tools only, so the web target is the
+verified one).
+
+## Tests
+
+```bash
+flutter test
+```
+
+- `test/state_machine_test.dart` — the three triggers, derived availability,
+  allocation order, shift rules, wait estimates.
+- `test/widget_test.dart` — renders every screen in every role, and re-renders
+  them at 1.3× and 1.6× accessibility text sizes, on a small phone, and with an
+  on-screen keyboard raised. This suite exists because a `borderRadius` on a
+  non-uniform `Border` throws only at paint time — invisible to the analyser,
+  and invisible in a release web build where assertions are stripped.
+
+## Layout notes
+
+- **Data is in-memory and seeded.** There is no persistence layer; a reload
+  restores the seed. The design is a v1 structure, not a backend contract.
+- **Allocation behaviour** (`autoAssign`, `pullNext`, `showWaitEstimate`) exists
+  as fields on `AppState`, defaulting to the design's values. They were canvas
+  editor knobs rather than app UI, so they are not surfaced on a screen.
+- **Fonts are bundled** (`assets/fonts/`) rather than fetched at runtime, so the
+  typography is identical offline and on every platform.
+- **`PhoneFrame`** pins the app to the design's 402×874 artboard on wide
+  viewports and lets it fill the screen on a phone.
+
+## Out of scope for v1
+
+Per the design's own notes: SMS "you're next" notifications, deposit capture at
+check-in, skill-matched allocation, the weekly owner report, and multi-branch.

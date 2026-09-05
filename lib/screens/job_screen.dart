@@ -177,8 +177,16 @@ class _LiveCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SectionLabel('In your chair', color: BF.whiteA(.5), ls: .16),
+              Expanded(
+                child: SectionLabel(
+                  'In your chair',
+                  color: BF.whiteA(.5),
+                  ls: .16,
+                ),
+              ),
+              const SizedBox(width: 8),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const _PulseDot(),
                   const SizedBox(width: 6),
@@ -198,20 +206,29 @@ class _LiveCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    app.fmt(elapsed),
-                    style: BF.serif(44, color: BF.white, height: 1),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'elapsed',
-                    style: BF.sans(11, 600, color: BF.whiteA(.45)),
-                  ),
-                ],
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Scales down rather than overflowing when accessibility
+                    // text sizes inflate this 44pt display figure.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        app.fmt(elapsed),
+                        maxLines: 1,
+                        style: BF.serif(44, color: BF.white, height: 1),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'elapsed',
+                      style: BF.sans(11, 600, color: BF.whiteA(.45)),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 18),
               Expanded(

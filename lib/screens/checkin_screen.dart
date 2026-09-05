@@ -26,7 +26,13 @@ class CheckinScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SectionLabel('Next queue number', color: BF.inkA(.4)),
+                  Expanded(
+                    child: SectionLabel(
+                      'Next queue number',
+                      color: BF.inkA(.4),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                   Text(
                     app.nextNo,
                     style: BF.serif(30, color: BF.acc, height: 1),

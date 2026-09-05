@@ -138,6 +138,36 @@ void main() {
     });
   });
 
+  group('navigation after a customer leaves the queue', () {
+    test('completing from the detail screen returns to the queue', () {
+      app.signIn(Role.supervisor, BFScreen.queue);
+      app.push(BFScreen.detail, detail: 104);
+      expect(app.screen, BFScreen.detail);
+
+      app.complete(104);
+
+      // detailId is cleared, so staying on `detail` would render nothing.
+      expect(app.detailId, isNull);
+      expect(app.screen, BFScreen.queue);
+    });
+
+    test('a braider completing lands back on her chair', () {
+      app.signIn(Role.braider, BFScreen.job, asBraider: 1);
+      app.complete(104);
+      expect(app.screen, BFScreen.job);
+    });
+
+    test('reassigning from the detail screen returns to the queue', () {
+      app.signIn(Role.supervisor, BFScreen.queue);
+      app.push(BFScreen.detail, detail: 104);
+
+      app.reassign(app.customers.firstWhere((c) => c.id == 104));
+
+      expect(app.screen, BFScreen.queue);
+      expect(app.detailId, isNull);
+    });
+  });
+
   group('manual allocation and reassignment', () {
     test('assign seats a waiting customer', () {
       app.assign(107, 3);

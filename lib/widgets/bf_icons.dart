@@ -34,6 +34,12 @@ enum BFIconType {
 
   /// The owner's day.
   today,
+
+  /// Navigate back.
+  chevronLeft,
+
+  /// Drill into a row.
+  chevronRight,
 }
 
 class BFIcon extends StatelessWidget {
@@ -115,6 +121,10 @@ class _BFIconPainter extends CustomPainter {
         _me(canvas, stroke);
       case BFIconType.today:
         _today(canvas, stroke, fill);
+      case BFIconType.chevronLeft:
+        _chevron(canvas, stroke, pointsLeft: true);
+      case BFIconType.chevronRight:
+        _chevron(canvas, stroke, pointsLeft: false);
     }
 
     canvas.restore();
@@ -233,6 +243,20 @@ class _BFIconPainter extends CustomPainter {
     canvas.drawLine(const Offset(8.2, 3.0), const Offset(8.2, 6.6), stroke);
     canvas.drawLine(const Offset(15.8, 3.0), const Offset(15.8, 6.6), stroke);
     canvas.drawCircle(const Offset(12, 15.4), 1.9, fill);
+  }
+
+  /// Replaces the ‹ / › text glyphs the design used, so the arrows match the
+  /// stroke weight and cap style of everything else here.
+  void _chevron(Canvas canvas, Paint stroke, {required bool pointsLeft}) {
+    final tip = pointsLeft ? 8.5 : 15.5;
+    final tail = pointsLeft ? 15.0 : 9.0;
+    canvas.drawPath(
+      Path()
+        ..moveTo(tail, 4.5)
+        ..lineTo(tip, 12)
+        ..lineTo(tail, 19.5),
+      stroke,
+    );
   }
 
   /// Shared shoulder curve so every figure in the set has the same build.

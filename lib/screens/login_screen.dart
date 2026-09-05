@@ -4,6 +4,7 @@ import '../models/models.dart';
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
 import '../theme/tokens.dart';
+import '../widgets/bf_icons.dart';
 
 /// Role picker. Dark panel with a terracotta glow, bottom-aligned — the app's
 /// only screen outside the tabbed shell.
@@ -155,7 +156,12 @@ class _RoleCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Text('›', style: TextStyle(color: BF.whiteA(.4), fontSize: 18)),
+              BFIcon(
+                BFIconType.chevronRight,
+                color: BF.whiteA(.4),
+                size: 17,
+                strokeWidth: 2.2,
+              ),
             ],
           ),
         ),

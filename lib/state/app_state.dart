@@ -13,14 +13,19 @@ enum BFScreen { queue, checkin, grid, staff, detail, job, next, me, owner }
 /// "is this braider clocked in", exactly as the design specifies. There is no
 /// separate availability state to drift out of sync.
 class AppState extends ChangeNotifier {
-  AppState() {
+  /// [ticking] drives the periodic re-render. Widget tests pass false and
+  /// pump their own frames — a live periodic timer trips the test binding's
+  /// "no pending timers" invariant.
+  AppState({bool ticking = true}) {
     _seed();
     // The design re-renders every 20s so elapsed timers and wait estimates
     // stay honest without touching any data.
-    _ticker = Timer.periodic(
-      const Duration(seconds: 20),
-      (_) => notifyListeners(),
-    );
+    if (ticking) {
+      _ticker = Timer.periodic(
+        const Duration(seconds: 20),
+        (_) => notifyListeners(),
+      );
+    }
   }
 
   // ── allocation behaviour ───────────────────────────────────────────────
@@ -524,7 +529,14 @@ class AppState extends ChangeNotifier {
 
     customers = updated;
     detailId = null;
-    if (role == Role.braider) screen = BFScreen.job;
+    if (role == Role.braider) {
+      screen = BFScreen.job;
+    } else if (screen == BFScreen.detail) {
+      // The customer being inspected has just left the queue, so the detail
+      // screen has nothing to render. Fall back to wherever we came from
+      // instead of stranding the supervisor on a blank screen.
+      screen = _stack.isNotEmpty ? _stack.last : BFScreen.queue;
+    }
     _stack.clear();
 
     say(
