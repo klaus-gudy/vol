@@ -7,6 +7,7 @@ import '../state/app_scope.dart';
 import '../state/app_state.dart';
 import '../theme/tokens.dart';
 import '../widgets/assign_sheet.dart';
+import '../widgets/bf_icons.dart';
 import 'chairs_screen.dart';
 import 'checkin_screen.dart';
 import 'detail_screen.dart';
@@ -246,20 +247,20 @@ class _TabBar extends StatelessWidget {
 
     final tabs = switch (app.role) {
       Role.supervisor => const [
-        (BFScreen.queue, 'Queue'),
-        (BFScreen.checkin, 'Check in'),
-        (BFScreen.grid, 'Chairs'),
-        (BFScreen.staff, 'Staff'),
+        (BFScreen.queue, 'Queue', BFIconType.queue),
+        (BFScreen.checkin, 'Check in', BFIconType.checkIn),
+        (BFScreen.grid, 'Chairs', BFIconType.chairs),
+        (BFScreen.staff, 'Staff', BFIconType.staff),
       ],
       Role.braider => const [
-        (BFScreen.job, 'My chair'),
-        (BFScreen.next, 'Up next'),
-        (BFScreen.me, 'Me'),
+        (BFScreen.job, 'My chair', BFIconType.myChair),
+        (BFScreen.next, 'Up next', BFIconType.upNext),
+        (BFScreen.me, 'Me', BFIconType.me),
       ],
       _ => const [
-        (BFScreen.owner, 'Today'),
-        (BFScreen.grid, 'Chairs'),
-        (BFScreen.staff, 'Staff'),
+        (BFScreen.owner, 'Today', BFIconType.today),
+        (BFScreen.grid, 'Chairs', BFIconType.chairs),
+        (BFScreen.staff, 'Staff', BFIconType.staff),
       ],
     };
 
@@ -279,10 +280,11 @@ class _TabBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              for (final (screen, label) in tabs)
+              for (final (screen, label, icon) in tabs)
                 Expanded(
                   child: _Tab(
                     label: label,
+                    icon: icon,
                     active: app.screen == screen,
                     onTap: () => app.go(screen),
                   ),
@@ -296,9 +298,15 @@ class _TabBar extends StatelessWidget {
 }
 
 class _Tab extends StatelessWidget {
-  const _Tab({required this.label, required this.active, required this.onTap});
+  const _Tab({
+    required this.label,
+    required this.icon,
+    required this.active,
+    required this.onTap,
+  });
 
   final String label;
+  final BFIconType icon;
   final bool active;
   final VoidCallback onTap;
 
@@ -316,14 +324,13 @@ class _Tab extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: active ? BF.acc : Colors.transparent,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: color, width: 2.5),
-                ),
+              // The active tab thickens its stroke as well as taking the
+              // accent colour, so the state survives a greyscale screenshot.
+              BFIcon(
+                icon,
+                color: color,
+                size: 22,
+                strokeWidth: active ? 2.2 : 1.8,
               ),
               const SizedBox(height: 5),
               Text(label, style: BF.sans(10.5, 700, color: color)),
