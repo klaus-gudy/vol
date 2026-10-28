@@ -50,6 +50,7 @@ class _BraidflowAppState extends State<BraidflowApp> {
           ),
           splashFactory: InkSparkle.splashFactory,
         ),
+        builder: (context, child) => PhoneFrame(child: child!),
         home: const _Root(),
       ),
     );
@@ -74,9 +75,7 @@ class _Root extends StatelessWidget {
         // The keyboard is handled inside the scrolling body, so the tab bar
         // stays pinned rather than being pushed off-screen.
         resizeToAvoidBottomInset: false,
-        body: PhoneFrame(
-          child: signedIn ? const AppShell() : const LoginScreen(),
-        ),
+        body: signedIn ? const AppShell() : const LoginScreen(),
       ),
     );
   }
