@@ -4,7 +4,11 @@ import '../models/models.dart';
 import '../state/app_scope.dart';
 import '../state/app_state.dart';
 import '../theme/tokens.dart';
+import '../widgets/auth_widgets.dart';
 import '../widgets/bf_icons.dart';
+import '../widgets/common.dart';
+import 'sign_in_screen.dart';
+import 'sign_up_screen.dart';
 
 /// Role picker. Dark panel with a terracotta glow, bottom-aligned — the app's
 /// only screen outside the tabbed shell.
@@ -65,38 +69,79 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(26, 0, 26, 46),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "SANDRA'S BRAIDING STUDIO",
-                    style: BF.sans(
-                      11,
-                      400,
-                      color: BF.whiteA(.5),
-                      height: 1,
-                      letterSpacing: 2.42,
+            // Scrolls on short screens; Align keeps the content pinned to the
+            // bottom when there is room to spare.
+            child: LayoutBuilder(
+              builder: (context, box) => SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(26, 0, 26, 24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: box.maxHeight - 24),
+                  child: Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "SANDRA'S BRAIDING STUDIO",
+                          style: BF.sans(
+                            11,
+                            400,
+                            color: BF.whiteA(.5),
+                            height: 1,
+                            letterSpacing: 2.42,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Braidflow',
+                          style: BF.sans(
+                            40,
+                            800,
+                            color: BF.white,
+                            height: 1,
+                            letterSpacing: -.5,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Sign in as',
+                          style: BF.sans(
+                            14,
+                            400,
+                            color: BF.whiteA(.6),
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        for (final r in roles) ...[
+                          r,
+                          if (r != roles.last) const SizedBox(height: 11),
+                        ],
+                        const SizedBox(height: 22),
+                        BFButton(
+                          label: 'Sign in with email',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const SignInScreen(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Center(
+                          child: AuthLink(
+                            'Create account',
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const SignUpScreen(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Braidflow',
-                    style: BF.serif(54, color: BF.white, height: .95),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Sign in as',
-                    style: BF.sans(14, 400, color: BF.whiteA(.6), height: 1.5),
-                  ),
-                  const SizedBox(height: 30),
-                  for (final r in roles) ...[
-                    r,
-                    if (r != roles.last) const SizedBox(height: 11),
-                  ],
-                ],
+                ),
               ),
             ),
           ),
