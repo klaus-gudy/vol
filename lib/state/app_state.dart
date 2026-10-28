@@ -367,6 +367,82 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ── accounts ───────────────────────────────────────────────────────────
+  final List<Account> accounts = [
+    const Account(
+      name: 'Sandra Musa',
+      email: 'sandra@braidflow.app',
+      password: 'owner1234',
+      role: Role.owner,
+    ),
+    const Account(
+      name: 'Grace Kanu',
+      email: 'grace@braidflow.app',
+      password: 'desk1234',
+      role: Role.supervisor,
+    ),
+    const Account(
+      name: 'Amina Sesay',
+      email: 'amina@braidflow.app',
+      password: 'chair1234',
+      role: Role.braider,
+      braiderId: 1,
+    ),
+  ];
+
+  Account? _accountFor(String email) {
+    final e = email.trim().toLowerCase();
+    for (final a in accounts) {
+      if (a.email == e) return a;
+    }
+    return null;
+  }
+
+  void _enter(Account a) {
+    switch (a.role) {
+      case Role.owner:
+        signIn(Role.owner, BFScreen.owner);
+      case Role.supervisor:
+        signIn(Role.supervisor, BFScreen.queue);
+      case Role.braider:
+        signIn(Role.braider, BFScreen.job, asBraider: a.braiderId);
+    }
+  }
+
+  /// Returns an error message, or null on success. The message is the same
+  /// for an unknown email and a wrong password so it can't be used to probe
+  /// which emails have accounts.
+  String? signInWithEmail(String email, String password) {
+    final a = _accountFor(email);
+    if (a == null || a.password != password) {
+      return 'Email or password is incorrect.';
+    }
+    _enter(a);
+    return null;
+  }
+
+  /// Creates a desk or owner account and signs it in. Returns an error
+  /// message, or null on success.
+  String? signUp({
+    required String name,
+    required String email,
+    required String password,
+    required Role role,
+  }) {
+    if (_accountFor(email) != null) {
+      return 'An account with this email already exists.';
+    }
+    final a = Account(
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      password: password,
+      role: role,
+    );
+    accounts.add(a);
+    _enter(a);
+    return null;
+  }
+
   void logout() {
     role = null;
     screen = BFScreen.queue;
