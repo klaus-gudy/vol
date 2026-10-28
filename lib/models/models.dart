@@ -12,6 +12,26 @@ enum Role { owner, supervisor, braider }
 
 enum CustomerStatus { waiting, inProgress, completed }
 
+/// A login. The prototype has no backend, so accounts live in memory and the
+/// password is compared as plain text — fine for a demo, never for production.
+class Account {
+  const Account({
+    required this.name,
+    required this.email,
+    required this.password,
+    required this.role,
+    this.braiderId,
+  });
+
+  final String name;
+  final String email;
+  final String password;
+  final Role role;
+
+  /// Set for braiders: which chair's job screen they land on.
+  final int? braiderId;
+}
+
 /// `services` — name → average minutes. Drives wait estimates and the
 /// progress bars, since long styles make a fixed slot length meaningless.
 const Map<String, int> kServiceDurations = {
