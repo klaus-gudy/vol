@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'screens/app_shell.dart';
 import 'screens/login_screen.dart';
+import 'screens/welcome_splash.dart';
 import 'state/app_scope.dart';
 import 'state/app_state.dart';
 import 'theme/tokens.dart';
@@ -75,7 +76,14 @@ class _Root extends StatelessWidget {
         // The keyboard is handled inside the scrolling body, so the tab bar
         // stays pinned rather than being pushed off-screen.
         resizeToAvoidBottomInset: false,
-        body: signedIn ? const AppShell() : const LoginScreen(),
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 450),
+          child: !signedIn
+              ? const LoginScreen(key: ValueKey('login'))
+              : app.showSplash
+              ? const WelcomeSplash(key: ValueKey('splash'))
+              : const AppShell(key: ValueKey('shell')),
+        ),
       ),
     );
   }
