@@ -25,21 +25,28 @@ class LoginScreen extends StatelessWidget {
         sub: 'Owner · full access',
         initials: 'SM',
         color: BF.green.withValues(alpha: .24),
-        onTap: () => app.signIn(Role.owner, BFScreen.owner),
+        onTap: () =>
+            app.signIn(Role.owner, BFScreen.owner, name: 'Sandra Musa'),
       ),
       _RoleCard(
         name: 'Grace Kanu',
         sub: 'Supervisor · desk & allocation',
         initials: 'GK',
         color: BF.acc.withValues(alpha: .26),
-        onTap: () => app.signIn(Role.supervisor, BFScreen.queue),
+        onTap: () =>
+            app.signIn(Role.supervisor, BFScreen.queue, name: 'Grace Kanu'),
       ),
       _RoleCard(
         name: 'Amina Sesay',
         sub: 'Braider · chair 1',
         initials: 'AS',
         color: BF.teal.withValues(alpha: .24),
-        onTap: () => app.signIn(Role.braider, BFScreen.job, asBraider: 1),
+        onTap: () => app.signIn(
+          Role.braider,
+          BFScreen.job,
+          asBraider: 1,
+          name: 'Amina Sesay',
+        ),
       ),
     ];
 
