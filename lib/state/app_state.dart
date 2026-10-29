@@ -38,6 +38,12 @@ class AppState extends ChangeNotifier {
 
   // ── session ────────────────────────────────────────────────────────────
   Role? role;
+
+  /// Display name of whoever is signed in, for the welcome splash.
+  String? userName;
+
+  /// True from sign-in until the welcome splash finishes playing.
+  bool showSplash = false;
   BFScreen screen = BFScreen.queue;
   final List<BFScreen> _stack = [];
   int meId = 1;
@@ -359,8 +365,10 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void signIn(Role r, BFScreen s, {int? asBraider}) {
+  void signIn(Role r, BFScreen s, {int? asBraider, String? name}) {
     role = r;
+    userName = name;
+    showSplash = true;
     screen = s;
     _stack.clear();
     if (asBraider != null) meId = asBraider;
@@ -401,11 +409,16 @@ class AppState extends ChangeNotifier {
   void _enter(Account a) {
     switch (a.role) {
       case Role.owner:
-        signIn(Role.owner, BFScreen.owner);
+        signIn(Role.owner, BFScreen.owner, name: a.name);
       case Role.supervisor:
-        signIn(Role.supervisor, BFScreen.queue);
+        signIn(Role.supervisor, BFScreen.queue, name: a.name);
       case Role.braider:
-        signIn(Role.braider, BFScreen.job, asBraider: a.braiderId);
+        signIn(
+          Role.braider,
+          BFScreen.job,
+          asBraider: a.braiderId,
+          name: a.name,
+        );
     }
   }
 
@@ -443,8 +456,16 @@ class AppState extends ChangeNotifier {
     return null;
   }
 
+  void finishSplash() {
+    if (!showSplash) return;
+    showSplash = false;
+    notifyListeners();
+  }
+
   void logout() {
     role = null;
+    userName = null;
+    showSplash = false;
     screen = BFScreen.queue;
     _stack.clear();
     detailId = null;
