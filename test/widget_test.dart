@@ -228,6 +228,13 @@ void main() {
       await tester.tap(find.text('Grace Kanu'));
       await tester.pump();
       expect(state.role, Role.supervisor);
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(find.text('Welcome, Grace'), findsOneWidget);
+      expect(find.text('Live queue'), findsNothing);
+
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 1));
+      expect(state.showSplash, isFalse);
       expect(find.text('Live queue'), findsOneWidget);
 
       await tester.tap(find.text('Switch'));
