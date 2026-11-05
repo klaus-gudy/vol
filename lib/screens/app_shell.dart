@@ -138,7 +138,7 @@ class _Header extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 5),
-                Text(title, style: BF.serif(30, height: 1.1)),
+                Text(title, style: BF.sans(26, 800, height: 1.15)),
                 if (sub.isNotEmpty) ...[
                   const SizedBox(height: 3),
                   Text(sub, style: BF.sans(12.5, 500, color: BF.inkA(.5))),
