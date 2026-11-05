@@ -85,7 +85,7 @@ class AssignSheet extends StatelessWidget {
                           const SizedBox(height: 16),
                           Text(
                             'Allocate ${target.name}',
-                            style: BF.serif(26, height: 1.1),
+                            style: BF.sans(21, 800, height: 1.15),
                           ),
                           const SizedBox(height: 5),
                           Text(
