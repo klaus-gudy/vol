@@ -35,15 +35,69 @@ availability record to drift.
 Plus a customer timeline reachable from the queue, and an allocation sheet that
 flags the braider auto-allocation would have picked.
 
-## Running it
+## Running it on another machine
+
+Everything the app needs is in the repo (fonts are bundled, data is seeded
+in memory). No backend, API keys or `.env` file are required.
+
+### 1. Install the prerequisites
+
+| Tool | Why | Check |
+| --- | --- | --- |
+| [Flutter SDK](https://docs.flutter.dev/get-started/install) (Dart `^3.10`, so a recent stable release) | builds and runs the app | `flutter --version` |
+| [Git](https://git-scm.com) | clone the repo | `git --version` |
+| Google Chrome | the web target, the quickest way to run it | `flutter devices` lists Chrome |
+| Android Studio (only for Android) | SDK + emulator | `flutter doctor` |
+| Xcode (only for iOS, macOS only) | simulator / device builds | `flutter doctor` |
+
+Make sure `flutter` is on your `PATH`, then run `flutter doctor` and fix
+anything it flags for the platform you care about. You can ignore the
+platforms you do not need.
+
+### 2. Clone and fetch dependencies
 
 ```bash
-flutter run -d chrome
+git clone <your-repo-url> braidflow
+cd braidflow
+flutter pub get
 ```
 
-Android and iOS targets are scaffolded. iOS needs a full Xcode install (the
-project was developed against Command Line Tools only, so the web target is the
-verified one).
+`pub get` reads `pubspec.yaml` / `pubspec.lock` and downloads the packages.
+The `build/` and `.dart_tool/` folders are git-ignored, so they are created
+fresh on the new machine.
+
+### 3. Run it
+
+```bash
+flutter run -d chrome          # web (verified target)
+flutter run                    # picks a connected device or emulator
+flutter devices                # see what is available
+```
+
+While it runs, press `r` for hot reload, `R` for hot restart, `q` to quit.
+
+### 4. Optional: serve a release web build
+
+```bash
+flutter build web --no-tree-shake-icons
+node serve.js                  # static server for build/web
+```
+
+`rebuild.sh` does the build step; it assumes Flutter lives at
+`/opt/homebrew/bin` (macOS Homebrew), so edit the `PATH` line on other setups.
+
+### Troubleshooting
+
+- **`flutter: command not found`**: Flutter's `bin/` folder is not on `PATH`.
+- **Dart SDK version error on `pub get`**: run `flutter upgrade`.
+- **No Chrome device listed**: install Chrome, or set `CHROME_EXECUTABLE`.
+- **Android licence errors**: `flutter doctor --android-licenses`.
+- **iOS build fails**: needs full Xcode (not just Command Line Tools), then
+  `sudo xcodebuild -runFirstLaunch` and `cd ios && pod install`.
+- **Stale build weirdness**: `flutter clean && flutter pub get`.
+
+Android and iOS targets are scaffolded. The project was developed against
+Command Line Tools only, so the web target is the verified one.
 
 ## Tests
 
