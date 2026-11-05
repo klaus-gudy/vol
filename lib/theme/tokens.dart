@@ -152,25 +152,6 @@ class BF {
     );
   }
 
-  /// Instrument Serif — display face for headings and big numerals.
-  static TextStyle serif(
-    double size, {
-    Color? color,
-    double? height,
-    double? letterSpacing,
-    FontStyle? style,
-  }) {
-    return TextStyle(
-      fontFamily: 'InstrumentSerif',
-      fontSize: size,
-      fontWeight: FontWeight.w400,
-      fontStyle: style,
-      color: color ?? ink,
-      height: height,
-      letterSpacing: letterSpacing,
-    );
-  }
-
   /// The recurring `700 10.5px / .14em / uppercase` section label.
   static TextStyle eyebrow({
     Color? color,
