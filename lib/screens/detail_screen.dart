@@ -72,7 +72,7 @@ class DetailScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(d.name, style: BF.serif(26, height: 1.1)),
+                        Text(d.name, style: BF.sans(21, 800, height: 1.15)),
                         const SizedBox(height: 3),
                         Text(
                           d.phone,
