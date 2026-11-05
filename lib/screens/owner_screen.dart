@@ -72,7 +72,7 @@ class OwnerScreen extends StatelessWidget {
                 children: [
                   Text(
                     '${done.length}',
-                    style: BF.serif(58, color: BF.white, height: 1),
+                    style: BF.sans(44, 800, color: BF.white, height: 1),
                   ),
                   const SizedBox(width: 8),
                   Flexible(
