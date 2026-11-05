@@ -88,13 +88,113 @@ node serve.js                  # static server for build/web
 
 ### Troubleshooting
 
-- **`flutter: command not found`**: Flutter's `bin/` folder is not on `PATH`.
+- **`flutter` not recognised**: see [Flutter not recognised](#flutter-not-recognised) below.
 - **Dart SDK version error on `pub get`**: run `flutter upgrade`.
 - **No Chrome device listed**: install Chrome, or set `CHROME_EXECUTABLE`.
 - **Android licence errors**: `flutter doctor --android-licenses`.
 - **iOS build fails**: needs full Xcode (not just Command Line Tools), then
   `sudo xcodebuild -runFirstLaunch` and `cd ios && pod install`.
 - **Stale build weirdness**: `flutter clean && flutter pub get`.
+
+### Flutter not recognised
+
+Errors look like `flutter: command not found` (macOS/Linux) or
+`'flutter' is not recognized as an internal or external command` /
+`The term 'flutter' is not recognized` (Windows). Work through these in order.
+
+**1. Is Flutter installed at all?** Look for a folder named `flutter` that
+contains `bin/flutter` (and `bin/flutter.bat` on Windows). If not, install it:
+
+- **Windows / macOS / Linux, manual:** download the SDK from
+  <https://docs.flutter.dev/get-started/install>, extract it somewhere
+  permanent, e.g. `C:\src\flutter` or `~/development/flutter`.
+  Avoid `C:\Program Files` (needs admin rights) and paths with spaces.
+- **macOS, Homebrew:** `brew install --cask flutter`
+- **Linux, snap:** `sudo snap install flutter --classic`
+- **VS Code:** the Flutter extension can download the SDK for you
+  (Command Palette, "Flutter: New Project", then "Download SDK").
+- **Git route (any OS):**
+  `git clone https://github.com/flutter/flutter.git -b stable ~/development/flutter`
+
+**2. Installed but not on `PATH`: add `<flutter folder>/bin`.**
+
+*Windows (GUI):* Start menu, search "Edit the system environment variables",
+Environment Variables, select `Path` under *User variables*, Edit, New, and paste
+`C:\src\flutter\bin`. Click OK on every dialog.
+
+*Windows (PowerShell, current user):*
+
+```powershell
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\src\flutter\bin", "User")
+```
+
+*macOS (zsh is the default shell):*
+
+```bash
+echo 'export PATH="$HOME/development/flutter/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+*Linux / macOS with bash:* same line, but append to `~/.bashrc` (Linux) or
+`~/.bash_profile` (macOS bash).
+
+*fish:* `fish_add_path ~/development/flutter/bin`
+
+**3. Close and reopen the terminal (and the IDE).** `PATH` changes are only
+read when a terminal starts. VS Code and Android Studio need a full restart,
+not just a new terminal tab.
+
+**4. Check you edited the right thing.**
+
+- The entry must end in `flutter/bin`, not `flutter` or `flutter/bin/flutter`.
+- Check what the shell sees: `echo $PATH` (macOS/Linux) or `echo $env:Path`
+  (PowerShell) or `echo %PATH%` (cmd).
+- Check where it resolves: `which flutter` (macOS/Linux) or `where flutter`
+  (Windows).
+- Wrong shell file: on macOS check `echo $SHELL`. zsh reads `~/.zshrc`, bash
+  reads `~/.bash_profile`.
+
+**5. Works in one terminal but not another.** GUI apps (VS Code, Android Studio)
+may not inherit your shell profile. Launch them from a terminal that has
+`flutter` on its `PATH`, or set `PATH` in the system settings (Windows) or in
+`~/.zprofile` (macOS).
+
+**6. Use the full path without touching `PATH` (quick workaround).**
+
+```bash
+~/development/flutter/bin/flutter doctor
+```
+
+```powershell
+C:\src\flutter\bin\flutter doctor
+```
+
+**7. `flutter` is found but fails.**
+
+- *Windows, "Git not found":* install Git for Windows, restart the terminal.
+- *Windows, PowerShell script blocked:* run
+  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+- *"Unable to find git in your PATH":* install Git and add it to `PATH`.
+- *"Permission denied" (macOS/Linux):* `chmod +x ~/development/flutter/bin/flutter`
+  or fix ownership with `sudo chown -R $USER ~/development/flutter`.
+- *"dubious ownership" git error:*
+  `git config --global --add safe.directory <flutter folder>`.
+- *Corporate proxy or no internet:* set `HTTPS_PROXY`, or use a mirror via
+  `PUB_HOSTED_URL` and `FLUTTER_STORAGE_BASE_URL`.
+- *Apple Silicon Mac, "bad CPU type":* `sudo softwareupdate --install-rosetta`.
+- *Linux, missing libs:* install `curl git unzip xz-utils zip libglu1-mesa`.
+- *Corrupt install:* delete the Flutter folder and reinstall, or run
+  `flutter doctor -v` to see the exact failing check.
+
+**8. Verify.** In a fresh terminal:
+
+```bash
+flutter --version
+flutter doctor
+```
+
+Both should print without errors for the platform you need (Chrome is enough
+for the web target). Then continue from step 2 above.
 
 Android and iOS targets are scaffolded. The project was developed against
 Command Line Tools only, so the web target is the verified one.
