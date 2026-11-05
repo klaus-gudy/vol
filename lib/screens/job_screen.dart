@@ -56,7 +56,7 @@ class JobScreen extends StatelessWidget {
               children: [
                 Text(
                   "You're free",
-                  style: BF.serif(34, color: BF.green, height: 1.1),
+                  style: BF.sans(28, 800, color: BF.green, height: 1.15),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -93,7 +93,7 @@ class JobScreen extends StatelessWidget {
               children: [
                 Text(
                   'Off shift',
-                  style: BF.serif(34, color: BF.inkA(.5), height: 1.1),
+                  style: BF.sans(28, 800, color: BF.inkA(.5), height: 1.15),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -198,7 +198,7 @@ class _LiveCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Text(c.name, style: BF.serif(40, color: BF.white, height: 1.05)),
+          Text(c.name, style: BF.sans(30, 800, color: BF.white, height: 1.15)),
           const SizedBox(height: 4),
           Text(
             '${c.style} · queue ${c.no}',
@@ -221,7 +221,7 @@ class _LiveCard extends StatelessWidget {
                       child: Text(
                         app.fmt(elapsed),
                         maxLines: 1,
-                        style: BF.serif(44, color: BF.white, height: 1),
+                        style: BF.sans(36, 800, color: BF.white, height: 1),
                       ),
                     ),
                     const SizedBox(height: 4),
