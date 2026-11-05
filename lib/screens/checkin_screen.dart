@@ -35,7 +35,7 @@ class CheckinScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     app.nextNo,
-                    style: BF.serif(30, color: BF.acc, height: 1),
+                    style: BF.sans(24, 800, color: BF.acc, height: 1),
                   ),
                 ],
               ),
