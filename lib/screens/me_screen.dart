@@ -48,7 +48,7 @@ class MeScreen extends StatelessWidget {
                 fontSize: 22,
               ),
               const SizedBox(height: 12),
-              Text(me.name, style: BF.serif(28, height: 1.1)),
+              Text(me.name, style: BF.sans(22, 800, height: 1.15)),
               const SizedBox(height: 4),
               Text(me.skills, style: BF.sans(12.5, 500, color: BF.inkA(.5))),
               const SizedBox(height: 12),
